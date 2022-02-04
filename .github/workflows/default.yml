@@ -1,0 +1,88 @@
+name: default
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+    - name: Cache pip packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements/*.txt') }}
+    - name: Install dependencies
+      env:
+        REQUIREMENTS_FILE: lint
+      run: |
+        python -m pip install -U pip setuptools
+        set -e
+        python -m pip install -U -r requirements/${REQUIREMENTS_FILE}.txt
+    - name: Lint with flake8
+      run: |
+        if [ "$GITHUB_EVENT_NAME" == "pull_request" -a -n "$GITHUB_HEAD_REF" ]; then
+          echo "(skipping matchers for pull request from local branches)"
+        else
+          echo "::add-matcher::.github/workflows/flake8-matcher.json"
+        fi
+        python -m flake8 src/app/hyuabot tests
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+    - name: Cache pip packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements/*.txt') }}
+    - name: Install dependencies
+      env:
+        REQUIREMENTS_FILE: typecheck
+      run: |
+        python -m pip install -U pip setuptools
+        python -m pip install -U -r requirements/${REQUIREMENTS_FILE}.txt
+    - name: Type check with mypy
+      run: |
+        if [ "$GITHUB_EVENT_NAME" == "pull_request" -a -n "$GITHUB_HEAD_REF" ]; then
+          echo "(skipping matchers for pull request from local branches)"
+        else
+          echo "::add-matcher::.github/workflows/mypy-matcher.json"
+        fi
+        python -m mypy --no-color-output src/app/hyuabot tests
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+    - name: Cache pip packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements/*.txt') }}
+    - name: Install dependencies
+      env:
+        REQUIREMENTS_FILE: test
+      run: |
+        python -m pip install -U pip setuptools
+        python -m pip install -U -r requirements/${REQUIREMENTS_FILE}.txt
+    - name: Test with pytest
+      run: |
+        python -m pytest -m 'not integration' -v --cov=src
+    - name: Clean up and upload coverage report
+      if: ${{ always() }}  # always run this step to publish test results when there are test failures
+      run: |
+        codecov
