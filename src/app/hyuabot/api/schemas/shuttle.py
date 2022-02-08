@@ -1,6 +1,6 @@
 from datetime import time
 from enum import Enum
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, Field
 
 
 class ShuttleType(Enum):
@@ -15,15 +15,15 @@ class ShuttleDepartureItem(BaseModel):
 
 
 class ShuttleDepartureByStop(BaseModel):
-    busForStation: str
-    busForTerminal: str
+    for_station: str = Field(alias="busForStation")
+    for_terminal: str = Field(alias="busForTerminal")
 
 
-class ShuttleStopInformation(BaseModel):
-    roadViewLink: HttpUrl
-    firstBusForStation: time
-    lastBusForStation: time
-    firstBusForTerminal: time
-    lastBusForTerminal: time
+class ShuttleStopResponse(BaseModel):
+    road_view: HttpUrl = Field(alias="roadViewLink")
+    first_bus_station: time = Field(alias="firstBusForStation")
+    last_bus_station: time = Field(alias="lastBusForStation")
+    first_bus_terminal: time = Field(alias="firstBusForTerminal")
+    last_bus_terminal: time = Field(alias="lastBusForTerminal")
     weekdays: ShuttleDepartureByStop
     weekends: ShuttleDepartureByStop

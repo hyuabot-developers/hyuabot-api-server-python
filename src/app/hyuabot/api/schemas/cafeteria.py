@@ -1,4 +1,4 @@
-from pydantic.main import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MenuItem(BaseModel):
@@ -8,5 +8,5 @@ class MenuItem(BaseModel):
 
 class CafeteriaItem(BaseModel):
     name: str
-    workingTime: str
-    menuList: dict[str, list[MenuItem]]
+    working_time: str = Field(alias="workingTime")
+    menu_list: dict[str, list[MenuItem]] = Field(alias="menuList")
