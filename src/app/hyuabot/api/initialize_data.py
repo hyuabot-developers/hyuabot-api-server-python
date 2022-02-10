@@ -1,10 +1,11 @@
 import asyncio
 import csv
 import json
-from datetime import datetime
 
 import aioredis
 from aiohttp import ClientSession
+
+from .core.config import settings
 
 
 # 초기 서버 시작 시 셔틀 버스 정보 redis 저장
@@ -34,5 +35,5 @@ async def store_shuttle_timetable_redis(url: str, key: str):
                     "type": shuttle_type,
                     "time": shuttle_time
                 })
-            redis_client = aioredis.from_url(f"redis://localhost:6379")
+            redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
             await redis_client.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
