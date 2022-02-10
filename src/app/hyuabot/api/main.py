@@ -2,13 +2,13 @@ import asyncio
 
 from fastapi import FastAPI
 
-from app.hyuabot.api.initialize_data import load_shuttle_timetable
+from app.hyuabot.api.initialize_data import initialize_data
 
 app = FastAPI()
 
 
 def main():
-    asyncio.run(load_shuttle_timetable())
+    initialize_data()
 
 
 main()

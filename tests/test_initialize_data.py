@@ -4,7 +4,7 @@ import aioredis
 import pytest
 
 from app.hyuabot.api.core.config import settings
-from app.hyuabot.api.initialize_data import load_shuttle_timetable
+from app.hyuabot.api.initialize_data import load_shuttle_timetable, load_bus_timetable
 
 
 @pytest.mark.asyncio
@@ -26,3 +26,20 @@ async def test_store_shuttle_timetable():
                 for shuttle_time in timetable:
                     assert "time" in shuttle_time.keys()
                     assert "type" in shuttle_time.keys()
+
+
+@pytest.mark.asyncio
+async def test_store_bus_timetable():
+    await load_bus_timetable()
+
+    day_keys = ["weekdays", "saturday", "sunday"]
+    line_keys = ["10-1", "707-1", "3102"]
+    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+
+    async with redis_client.client() as connection:
+        for line in line_keys:
+            for day in day_keys:
+                key = f"bus_{line}_{day}"
+                timetable: list[str] = await connection.get(key)
+
+                assert len(timetable) > 0
