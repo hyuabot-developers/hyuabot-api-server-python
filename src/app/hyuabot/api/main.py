@@ -8,7 +8,7 @@ app = FastAPI()
 
 
 def main():
-    load_shuttle_timetable()
+    asyncio.run(load_shuttle_timetable())
 
 
 main()
