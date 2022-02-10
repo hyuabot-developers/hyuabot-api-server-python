@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import FastAPI
 
 from app.hyuabot.api.initialize_data import initialize_data
