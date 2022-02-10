@@ -44,7 +44,7 @@ async def test_store_shuttle_date():
     date_regex = re.compile(r"^\d{1,2}/\d{1,2}$")
 
     async with redis_client.client() as connection:
-        key = f"shuttle_date"
+        key = "shuttle_date"
         json_string: bytes = await connection.get(key)
         date_json: dict = json.loads(json_string.decode("utf-8"))
 
