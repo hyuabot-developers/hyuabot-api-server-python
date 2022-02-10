@@ -1,10 +1,11 @@
 import json
+import re
 
 import aioredis
 import pytest
 
 from app.hyuabot.api.core.config import settings
-from app.hyuabot.api.initialize_data import load_shuttle_timetable, \
+from app.hyuabot.api.initialize_data import load_shuttle_timetable, store_shuttle_date_redis, \
     load_bus_timetable, load_subway_timetable
 
 
@@ -34,6 +35,33 @@ async def test_store_shuttle_timetable():
                     assert 0 <= int(minute) < 60
 
                     assert shuttle_time["type"] in ["DH", "DY", "C"]
+
+
+@pytest.mark.asyncio
+async def test_store_shuttle_date():
+    await store_shuttle_date_redis()
+    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+    date_regex = re.compile(r"^\d{1,2}/\d{1,2}$")
+
+    async with redis_client.client() as connection:
+        key = "shuttle_date"
+        json_string: bytes = await connection.get(key)
+        date_json: dict = json.loads(json_string.decode("utf-8"))
+
+        for key in date_json.keys():
+            if key == "holiday":
+                assert all([date_regex.match(date) for date in date_json[key]])
+            elif key == "halt":
+                for calendar_type in date_json[key].keys():
+                    assert all([date_regex.match(date) for date in date_json[key][calendar_type]])
+            else:
+                for term in date_json[key]:
+                    assert "key" in term.keys()
+                    assert "start" in term.keys()
+                    assert "end" in term.keys()
+
+                    assert date_regex.match(term["start"])
+                    assert date_regex.match(term["end"])
 
 
 @pytest.mark.asyncio

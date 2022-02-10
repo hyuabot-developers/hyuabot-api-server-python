@@ -39,6 +39,18 @@ async def store_shuttle_timetable_redis(url: str, key: str):
                 await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
 
 
+async def store_shuttle_date_redis():
+    url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main/date.json"
+    key = "shuttle_date"
+
+    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+    async with ClientSession() as session:
+        async with session.get(url) as response:
+            date = json.loads(await response.text())
+            async with redis_client.client() as connection:
+                await connection.set(key, json.dumps(date, ensure_ascii=False).encode("utf-8"))
+
+
 # 초기 서버 시작 시 노선 버스 정보 redis 저장
 async def load_bus_timetable():
     day_keys = ["weekdays", "saturday", "sunday"]
@@ -102,5 +114,6 @@ async def store_subway_timetable_redis(url: str, key: str):
 
 def initialize_data():
     asyncio.run(load_shuttle_timetable())
+    asyncio.run(store_shuttle_date_redis())
     asyncio.run(load_bus_timetable())
     asyncio.run(load_subway_timetable())
