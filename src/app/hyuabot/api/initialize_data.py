@@ -33,7 +33,7 @@ async def store_shuttle_timetable_redis(url: str, key: str):
             for shuttle_type, shuttle_time in reader:
                 timetable.append({
                     "type": shuttle_type,
-                    "time": shuttle_time
+                    "time": shuttle_time,
                 })
             async with redis_client.client() as connection:
                 await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
