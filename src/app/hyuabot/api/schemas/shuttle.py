@@ -4,9 +4,9 @@ from pydantic import BaseModel, HttpUrl, Field
 
 
 class ShuttleType(Enum):
-    DH: 1  # 한대앞 직행
-    DY: 2  # 예술인 직행
-    C: 3  # 순환 버스
+    DH = 1  # 한대앞 직행
+    DY = 2  # 예술인 직행
+    C = 3  # 순환 버스
 
 
 class ShuttleDepartureItem(BaseModel):
