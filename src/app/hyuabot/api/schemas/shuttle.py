@@ -24,15 +24,13 @@ class ShuttleDepartureByStop(BaseModel):
 class ShuttleStopResponse(BaseModel):
     road_view: HttpUrl = Field(alias="roadViewLink", title="로드뷰 링크",
                                description="예시: 'https://www.hyuabot.com/roadview/'")
-    first_bus_station: time = Field(alias="firstBusForStation", title="한대앞 방면 첫차 시간", description="예시: '09:00'")
-    last_bus_station: time = Field(alias="lastBusForStation", title="한대앞 방면 막차 시간", description="예시: '22:00'")
-    first_bus_terminal: time = Field(alias="firstBusForTerminal", title="예술인 방면 첫차 시간", description="예시: '09:00'")
-    last_bus_terminal: time = Field(alias="lastBusForTerminal", title="예술인 방면 막차 시간", description="예시: '22:00'")
-    weekdays: ShuttleDepartureByStop = Field(alias="weekdays",
-                                             title="주중 셔틀 출발 시간",
-                                             description="예시: {'busForStation': [{'time': '09:00', 'type': 'DH'}], "
-                                                         "'busForTerminal': [{'time': '09:00', 'type': 'DY'}]}")
-    weekends: ShuttleDepartureByStop = Field(alias="weekends",
-                                             title="주말 셔틀 출발 시간",
-                                             description="예시: {'busForStation': [{'time': '09:00', 'type': 'DH'}], "
-                                                         "'busForTerminal': [{'time': '09:00', 'type': 'DY'}]}")
+    first_bus_station: time = Field(alias="firstBusForStation",
+                                    title="한대앞 방면 첫차 시간", description="예시: '09:00'")
+    last_bus_station: time = Field(alias="lastBusForStation",
+                                   title="한대앞 방면 막차 시간", description="예시: '22:00'")
+    first_bus_terminal: time = Field(alias="firstBusForTerminal",
+                                     title="예술인 방면 첫차 시간", description="예시: '09:00'")
+    last_bus_terminal: time = Field(alias="lastBusForTerminal",
+                                    title="예술인 방면 막차 시간", description="예시: '22:00'")
+    weekdays: ShuttleDepartureByStop = Field(alias="weekdays", title="주중 셔틀 출발 시간")
+    weekends: ShuttleDepartureByStop = Field(alias="weekends", title="주말 셔틀 출발 시간")

@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field
 
 
 class SubwayRealtimeItem(BaseModel):
-    updated_time: time = Field(alias="updatedTime", title="도착 정보 갱신 시간", description="예시: '2020-01-01T00:00:00'")
+    updated_time: time = Field(alias="updatedTime", title="도착 정보 갱신 시간",
+                               description="예시: '2020-01-01T00:00:00'")
     terminal_station: str = Field(alias="terminalStation", title="행선지(역)", description="예시: '오이도'")
     current_station: str = Field(alias="location", title="현재 위치(역)", description="예시: '반월'")
     remained_time: float = Field(alias="remainedTime", title="남은 시간(분)", description="예시: '10.0'")
