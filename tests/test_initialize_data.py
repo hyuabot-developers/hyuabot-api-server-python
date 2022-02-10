@@ -4,7 +4,8 @@ import aioredis
 import pytest
 
 from app.hyuabot.api.core.config import settings
-from app.hyuabot.api.initialize_data import load_shuttle_timetable, load_bus_timetable, load_subway_timetable
+from app.hyuabot.api.initialize_data import load_shuttle_timetable, \
+    load_bus_timetable, load_subway_timetable
 
 
 @pytest.mark.asyncio
