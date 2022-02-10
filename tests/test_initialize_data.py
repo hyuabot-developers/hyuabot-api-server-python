@@ -27,6 +27,13 @@ async def test_store_shuttle_timetable():
                     assert "time" in shuttle_time.keys()
                     assert "type" in shuttle_time.keys()
 
+                    assert ":" in shuttle_time["time"]
+                    hour, minute = shuttle_time["time"].split(":")
+                    assert 0 <= int(hour) < 24
+                    assert 0 <= int(minute) < 60
+
+                    assert shuttle_time["type"] in ["DH", "DY", "C"]
+
 
 @pytest.mark.asyncio
 async def test_store_bus_timetable():
@@ -40,6 +47,13 @@ async def test_store_bus_timetable():
         for line in line_keys:
             for day in day_keys:
                 key = f"bus_{line}_{day}"
-                timetable: list[str] = await connection.get(key)
+                json_string: bytes = await connection.get(key)
+                timetable: list[str] = json.loads(json_string.decode("utf-8"))
 
                 assert len(timetable) > 0
+                print(timetable)
+                for bus_time in timetable:
+                    assert ":" in bus_time
+                    hour, minute = bus_time.split(":")
+                    assert 0 <= int(hour) < 24
+                    assert 0 <= int(minute) < 60

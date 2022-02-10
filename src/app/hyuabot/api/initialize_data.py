@@ -62,7 +62,7 @@ async def store_bus_timetable_redis(url: str, key: str):
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
             timetable: list[str] = []
             for bus_arrival_time in reader:
-                timetable.append(str(bus_arrival_time))
+                timetable.append(bus_arrival_time[0])
             async with redis_client.client() as connection:
                 await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
 
