@@ -12,13 +12,14 @@ from .core.config import settings
 async def load_shuttle_timetable():
     term_keys = ["semester", "vacation", "vacation_session"]
     day_keys = ["week", "weekend"]
+    day_dict = {"week": "weekdays", "weekend": "weekends"}
 
     base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main"
     tasks = []
     for term in term_keys:
         for day in day_keys:
             url = f"{base_url}/{term}/{day}.csv"
-            key = f"shuttle_{term}_{day}"
+            key = f"shuttle_{term}_{day_dict[day]}"
             tasks.append(store_shuttle_timetable_redis(url, key))
 
     await asyncio.gather(*tasks)

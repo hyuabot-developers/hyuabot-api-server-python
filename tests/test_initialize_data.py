@@ -14,7 +14,7 @@ async def test_store_shuttle_timetable():
     await load_shuttle_timetable()
 
     term_keys = ["semester", "vacation", "vacation_session"]
-    day_keys = ["week", "weekend"]
+    day_keys = ["weekdays", "weekends"]
     redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
 
     async with redis_client.client() as connection:

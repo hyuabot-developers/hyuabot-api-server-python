@@ -50,3 +50,16 @@ class ShuttleStop(BaseModel):
 class ShuttleRouteStationListResponse(BaseModel):
     message: str = Field(alias="message", title="메시지")
     station_list: list[ShuttleStop] = Field(alias="stationList", title="셔틀 정류장 목록")
+
+
+# 노선별 셔틀버스
+class ShuttleListItem(BaseModel):
+    current_station: str = Field(alias="currentStation", title="현재 정류장")
+    current_station_seq: int = Field(alias="currentStationSeq", title="현재 정류장 순서")
+    last_shuttle: bool = Field(alias="lastShuttle", title="막차 여부")
+
+
+# 노선별 셔틀버스 목록
+class ShuttleListResponse(BaseModel):
+    message: str = Field(alias="message", title="메시지")
+    shuttle_list: list[ShuttleListItem] = Field(alias="shuttleList", title="셔틀 목록")
