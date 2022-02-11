@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Tuple
 
 import aioredis
 from korean_lunar_calendar import KoreanLunarCalendar
@@ -7,7 +8,7 @@ from korean_lunar_calendar import KoreanLunarCalendar
 from app.hyuabot.api.core.config import settings
 
 
-async def get_shuttle_term(date: datetime = datetime.now()) -> (bool, str):
+async def get_shuttle_term(date: datetime = datetime.now()) -> Tuple[bool, str]:
     """
     오늘 날짜에 대한 셔틀 운행 타입을 반환합니다.
     :param date: 날짜
@@ -33,6 +34,7 @@ async def get_shuttle_term(date: datetime = datetime.now()) -> (bool, str):
 
         # 운행 타입 확인
         term_keys = ["semester", "vacation", "vacation_session"]
+        current_term = ""
         for term_key in term_keys:
             for term in date_json[term_key]:
                 start_date = datetime.strptime(term["start"], "%m/%d")
@@ -46,4 +48,5 @@ async def get_shuttle_term(date: datetime = datetime.now()) -> (bool, str):
                         start_date.replace(year=date.year - 1)
                         end_date.replace(year=date.year)
                 if start_date <= date <= end_date:
-                    return is_working, term_key
+                    current_term = term_key
+        return is_working, current_term

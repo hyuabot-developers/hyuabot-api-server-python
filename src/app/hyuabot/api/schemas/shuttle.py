@@ -34,3 +34,19 @@ class ShuttleStopResponse(BaseModel):
                                     title="예술인 방면 막차 시간", description="예시: '22:00'")
     weekdays: ShuttleDepartureByStop = Field(alias="weekdays", title="주중 셔틀 출발 시간")
     weekends: ShuttleDepartureByStop = Field(alias="weekends", title="주말 셔틀 출발 시간")
+
+
+# 셔틀 정류장 정보
+class ShuttleStop(BaseModel):
+    name_korean: str = Field(alias="koreanName", title="셔틀 정류장 이름(국문)",
+                             description="예시: '셔틀콕'")
+    name_english: str = Field(alias="englishName", title="셔틀 정류장 이름(영문)",
+                              description="예시: 'Shuttlecock'")
+    longitude: float = Field(alias="longitude", title="셔틀 정류장 경도", description="예시: '127.0'")
+    latitude: float = Field(alias="latitude", title="셔틀 정류장 위도", description="예시: '37.5'")
+
+
+# 셔틀 정류장 목록
+class ShuttleRouteStationListResponse(BaseModel):
+    message: str = Field(alias="message", title="메시지")
+    station_list: list[ShuttleStop] = Field(alias="stationList", title="셔틀 정류장 목록")

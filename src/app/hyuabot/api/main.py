@@ -1,6 +1,5 @@
 import asyncio
 
-import hypercorn
 from fastapi import FastAPI
 from hypercorn import Config
 from hypercorn.asyncio import serve

@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
 
-from app.hyuabot.api.api.api_v1.endpoints import shuttle
+from app.hyuabot.api.api.api_v1.endpoints.shuttle import route
 
 
 shuttle_router = APIRouter()
-shuttle_router.include_router(shuttle.router, prefix="/shuttle", tags=["shuttle"])
+shuttle_router.include_router(route.route_router, prefix="/shuttle", tags=["shuttle"])
