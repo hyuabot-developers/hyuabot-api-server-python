@@ -2,6 +2,7 @@
 from app.hyuabot.api.schemas.shuttle import ShuttleStop
 
 shuttle_line_type = ["DH", "DY", "C"]
+shuttle_stop_type = ["Dormitory", "Shuttlecock_O", "Station", "Terminal", "Shuttlecock_I"]
 
 # 셔틀버스 정류장
 shuttle_dormitory = ShuttleStop(

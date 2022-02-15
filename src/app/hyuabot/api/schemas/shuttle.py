@@ -11,7 +11,7 @@ class ShuttleType(Enum):
 
 class ShuttleDepartureItem(BaseModel):
     time: str = Field(alias="time", title="정류장 출발 시간", description="예시: '09:00'")
-    type: ShuttleType = Field(alias="type", title="셔틀 행선지", description="예시: 'DH'")
+    type: str = Field(alias="type", title="셔틀 행선지", description="예시: 'DH'")
 
 
 class ShuttleDepartureByStop(BaseModel):
