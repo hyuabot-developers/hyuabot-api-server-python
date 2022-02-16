@@ -26,5 +26,4 @@ async def fetch_shuttle_route_station_list(shuttle_type: str):
     else:
         station_list = [shuttle_dormitory, shuttle_shuttlecock_o, shuttle_station,
                         shuttle_terminal, shuttle_shuttlecock_i, shuttle_dormitory]
-    return JSONResponse(status_code=200, content=ShuttleRouteStationListResponse(
-        message=message, stationList=station_list).dict())
+    return ShuttleRouteStationListResponse(message=message, stationList=station_list)

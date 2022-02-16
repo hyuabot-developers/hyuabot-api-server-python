@@ -52,8 +52,8 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str):
                 shuttle_for_station.append(shuttle_item)
                 shuttle_for_terminal.append(shuttle_item)
 
-    return JSONResponse(content=ShuttleDepartureByStop(
+    return ShuttleDepartureByStop(
         message="정상 처리되었습니다.",
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
-    ).dict())
+    )

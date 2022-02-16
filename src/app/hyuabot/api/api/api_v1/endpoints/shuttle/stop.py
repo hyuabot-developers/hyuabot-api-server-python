@@ -1,11 +1,10 @@
 from math import sqrt
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
 
-from app.hyuabot.api.schemas.shuttle import ShuttleStop
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_dormitory, shuttle_shuttlecock_o, \
     shuttle_station, shuttle_terminal, shuttle_shuttlecock_i
+from app.hyuabot.api.schemas.shuttle import ShuttleStop
 
 stop_router = APIRouter(prefix="/station")
 
@@ -19,4 +18,4 @@ async def fetch_around_shuttle_stop(latitude: float, longitude: float):
         for station in station_list
     ]
     around_station = station_list[distance_between_station.index(min(distance_between_station))]
-    return JSONResponse(content=around_station.dict())
+    return around_station

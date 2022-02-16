@@ -94,7 +94,4 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
                     ))
                 elif shuttle_departure_time > now:
                     break
-    return JSONResponse(content=ShuttleListResponse(
-        message="정상 처리되었습니다.",
-        shuttleList=shuttle_departure_list,
-    ).dict())
+    return ShuttleListResponse(message="정상 처리되었습니다.", shuttleList=shuttle_departure_list)
