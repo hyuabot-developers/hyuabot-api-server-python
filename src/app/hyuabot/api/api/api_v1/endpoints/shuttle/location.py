@@ -13,7 +13,7 @@ from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type, shut
 location_router = APIRouter(prefix="/location")
 
 
-@location_router.get("/", status_code=200, response_model=ShuttleListResponse)
+@location_router.get("", status_code=200, response_model=ShuttleListResponse)
 async def fetch_shuttle_location_each_type(shuttle_type: str = shuttle_type_query):
     if shuttle_type not in shuttle_line_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 종류입니다."})
@@ -30,7 +30,6 @@ async def fetch_shuttle_location_each_type(shuttle_type: str = shuttle_type_quer
     async with redis_client.client() as connection:
         key = f"shuttle_{current_term}_{weekdays_keys}"
         json_string: bytes = await connection.get(key)
-        print(key)
         timetable: list[dict] = [shuttle_item
                                  for shuttle_item in json.loads(json_string.decode("utf-8"))
                                  if shuttle_item["type"] == shuttle_type]

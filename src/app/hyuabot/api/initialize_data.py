@@ -113,8 +113,8 @@ async def store_subway_timetable_redis(url: str, key: str):
                 await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
 
 
-def initialize_data():
-    asyncio.run(load_shuttle_timetable())
-    asyncio.run(store_shuttle_date_redis())
-    asyncio.run(load_bus_timetable())
-    asyncio.run(load_subway_timetable())
+async def initialize_data():
+    await load_shuttle_timetable()
+    await store_shuttle_date_redis()
+    await load_bus_timetable()
+    await load_subway_timetable()

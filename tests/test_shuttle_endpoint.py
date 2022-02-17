@@ -35,9 +35,8 @@ async def test_shuttle_around_station():
         response = await client.get(f"{settings.API_V1_STR}/shuttle/station/around",
                                     params={"latitude": 37.29246290291605,
                                             "longitude": 126.8359786509412})
-        response_json = response.json()
-
         assert response.status_code == 200
+        response_json = response.json()
         check_shuttle_station_item(response_json)
 
 
@@ -47,9 +46,9 @@ async def test_shuttle_location():
         for shuttle_type in shuttle_line_type:
             response = await client.get(f"{settings.API_V1_STR}/shuttle/location",
                                         params={"shuttleType": shuttle_type})
+            assert response.status_code == 200
             response_json = response.json()
 
-            assert response.status_code == 200
             assert "message" in response_json.keys() and type(response_json["message"]) == str
             assert "shuttleList" in response_json.keys() and type(response_json["shuttleList"]) == list
             for shuttle_item in response_json["shuttleList"]:

@@ -49,7 +49,6 @@ async def get_shuttle_term(date: datetime = datetime.now()) -> Tuple[bool, str, 
                         start_date = start_date.replace(year=date.year - 1)
                         end_date = end_date.replace(year=date.year)
 
-                print(start_date, date, end_date)
                 if start_date <= date <= end_date:
                     current_term = term_key
 
