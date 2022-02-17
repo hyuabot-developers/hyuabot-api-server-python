@@ -9,16 +9,11 @@ from app.hyuabot.api.core.config import settings
 from app.hyuabot.api.initialize_data import initialize_data
 
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup():
+    await initialize_data()
+
+
 app.include_router(shuttle_router, prefix=settings.API_V1_STR)
-
-
-def main():
-    initialize_data()
-
-    config = Config()
-    config.bind = ["localhost:8000"]
-
-    asyncio.run(serve(app, config))
-
-
-main()
