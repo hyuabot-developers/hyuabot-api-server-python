@@ -12,13 +12,14 @@ from .core.config import settings
 async def load_shuttle_timetable():
     term_keys = ["semester", "vacation", "vacation_session"]
     day_keys = ["week", "weekend"]
+    day_dict = {"week": "weekdays", "weekend": "weekends"}
 
     base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main"
     tasks = []
     for term in term_keys:
         for day in day_keys:
             url = f"{base_url}/{term}/{day}.csv"
-            key = f"shuttle_{term}_{day}"
+            key = f"shuttle_{term}_{day_dict[day]}"
             tasks.append(store_shuttle_timetable_redis(url, key))
 
     await asyncio.gather(*tasks)
@@ -112,8 +113,8 @@ async def store_subway_timetable_redis(url: str, key: str):
                 await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
 
 
-def initialize_data():
-    asyncio.run(load_shuttle_timetable())
-    asyncio.run(store_shuttle_date_redis())
-    asyncio.run(load_bus_timetable())
-    asyncio.run(load_subway_timetable())
+async def initialize_data():
+    await load_shuttle_timetable()
+    await store_shuttle_date_redis()
+    await load_bus_timetable()
+    await load_subway_timetable()
