@@ -18,7 +18,7 @@ async def test_shuttle_station_list():
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for shuttle_type in shuttle_line_type:
             response = await client.get(f"{settings.API_V1_STR}/shuttle/route/station",
-                                  params={"shuttleType": shuttle_type})
+                                        params={"shuttleType": shuttle_type})
             response_json = response.json()
 
             assert response.status_code == 200
@@ -33,7 +33,8 @@ async def test_shuttle_station_list():
 async def test_shuttle_around_station():
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         response = await client.get(f"{settings.API_V1_STR}/shuttle/station/around",
-                              params={"latitude": 37.29246290291605, "longitude": 126.8359786509412})
+                                    params={"latitude": 37.29246290291605,
+                                            "longitude": 126.8359786509412})
         response_json = response.json()
 
         assert response.status_code == 200
@@ -45,7 +46,7 @@ async def test_shuttle_location():
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for shuttle_type in shuttle_line_type:
             response = await client.get(f"{settings.API_V1_STR}/shuttle/location",
-                                  params={"shuttleType": shuttle_type})
+                                        params={"shuttleType": shuttle_type})
             response_json = response.json()
 
             assert response.status_code == 200
@@ -65,11 +66,12 @@ async def test_shuttle_arrival_list():
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for shuttle_stop in shuttle_stop_type:
             response = await client.get(f"{settings.API_V1_STR}/shuttle/arrival/station",
-                                  params={"shuttleStop": shuttle_stop})
+                                        params={"shuttleStop": shuttle_stop})
             response_json = response.json()
 
             assert response.status_code == 200
-            assert "busForStation" in response_json.keys() and type(response_json["busForStation"]) == list
+            assert "busForStation" in response_json.keys() and type(
+                response_json["busForStation"]) == list
             for shuttle_item in response_json["busForStation"]:
                 assert "time" in shuttle_item.keys() and type(shuttle_item["time"]) == str
                 assert "type" in shuttle_item.keys() and type(shuttle_item["type"]) == str

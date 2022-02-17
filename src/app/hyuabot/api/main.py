@@ -1,8 +1,4 @@
-import asyncio
-
 from fastapi import FastAPI
-from hypercorn import Config
-from hypercorn.asyncio import serve
 
 from app.hyuabot.api.api.api_v1.api import shuttle_router
 from app.hyuabot.api.core.config import settings
