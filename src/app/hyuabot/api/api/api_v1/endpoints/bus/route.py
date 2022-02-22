@@ -38,7 +38,7 @@ async def fetch_bus_realtime_redis(bus_line_id: str, bus_stop_id: str) -> list:
 
 
 @arrival_router.get("", status_code=200, response_model=BusStopInformationResponse)
-async def fetch_bus_information_by_route():
+async def fetch_bus_informatione():
 
     realtime_10_1, realtime_707_1, realtime_3102 = await asyncio.gather(
         fetch_bus_realtime_redis(bus_route_dict["10-1"][0], bus_route_dict["10-1"][1]),
@@ -84,7 +84,6 @@ async def fetch_bus_information_by_route():
     ])
 
 
-
 @arrival_router.get("/route", status_code=200, response_model=BusDepartureByLine)
 async def fetch_bus_information_by_route(bus_line_id: str = bus_route_query,
                                          timetable_count: int | None = timetable_limit):
@@ -100,11 +99,9 @@ async def fetch_bus_information_by_route(bus_line_id: str = bus_route_query,
         fetch_bus_timetable_redis(bus_line_id, day_keys[2]),
     )
     message = "정상 처리되었습니다."
-    timetable = BusTimetable(weekdays=weekdays_timetable[:timetable_count
-                                if timetable_count else len(weekdays_timetable)],
-                             saturday=saturday_timetable[:timetable_count
-                                if timetable_count else len(saturday_timetable)],
-                             sunday=sunday_timetable[:timetable_count
-                                if timetable_count else len(sunday_timetable)])
+    timetable = BusTimetable(
+        weekdays=weekdays_timetable[:timetable_count if timetable_count else len(weekdays_timetable)],
+        saturday=saturday_timetable[:timetable_count if timetable_count else len(saturday_timetable)],
+        sunday=sunday_timetable[:timetable_count if timetable_count else len(sunday_timetable)])
     return BusDepartureByLine(message=message, name=bus_line_id, busStop=bus_stop_dict[bus_stop_id],
                               realtime=arrival_list, timetable=timetable)

@@ -1,7 +1,8 @@
 name: default
 
 on: [push, pull_request]
-
+env:
+  bus_auth: ${{ secrets.BUS_AUTH }}
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -87,8 +88,6 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest -m 'not integration' -v --cov=src
-        env:
-          bus_auth: 1234567890
     - name: Clean up and upload coverage report
       if: ${{ always() }}  # always run this step to publish test results when there are test failures
       run: |
