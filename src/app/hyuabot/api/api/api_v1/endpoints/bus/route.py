@@ -25,15 +25,15 @@ async def fetch_bus_realtime_redis(bus_line_id: str, bus_stop_id: str) -> list:
             f"{bus_stop_id}_{bus_line_id}_arrival",
         )
 
-        arrival_list = []
+        arrival_list: list[dict] = []
         if update_time is not None:
             updated_before = (now - datetime.datetime.strptime(
                 update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S")
             ).seconds
             if updated_before < 60:
-                arrival_list: list[dict] = json.loads(arrival_list_string.decode("utf-8"))
+                arrival_list = json.loads(arrival_list_string.decode("utf-8"))
         if not arrival_list:
-            arrival_list: list[dict] = await fetch_bus_realtime(bus_stop_id, bus_line_id)
+            arrival_list = await fetch_bus_realtime(bus_stop_id, bus_line_id)
         return arrival_list
 
 
