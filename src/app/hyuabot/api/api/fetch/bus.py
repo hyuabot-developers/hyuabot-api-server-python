@@ -4,12 +4,10 @@ from datetime import datetime
 
 import aiohttp
 import aioredis
-
-from app.hyuabot.api.api.fetch import fetch_router
-from app.hyuabot.api.schemas.bus import BusRealtimeItem
-from lxml import etree
+from bs4 import BeautifulSoup
 from starlette.responses import JSONResponse
 
+from app.hyuabot.api.api.fetch import fetch_router
 from app.hyuabot.api.core.config import settings
 
 
@@ -38,47 +36,44 @@ async def fetch_bus_realtime_in_a_row() -> JSONResponse:
     return JSONResponse({"error": "Fetch bus data success"}, status_code=200)
 
 
-async def fetch_bus_realtime(stop_id: str, route_id: str) -> list:
+async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
     bus_auth_key = settings.BUS_AUTH_KEY
     url = "http://openapi.gbis.go.kr/ws/rest/busarrivalservice"
     params = {"serviceKey": bus_auth_key, "stationId": stop_id, "routeId": route_id}
 
     timeout = aiohttp.ClientTimeout(total=3.0)
+    arrival_list = []
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(url, params=params) as response:
-            response_xml = etree.fromstring((await response.text()).encode("utf-8"))
+            soup = BeautifulSoup(await response.text(), "lxml")
+            arrival_info_list = soup.find("response").find("msgbody")
+            arrival_info_list = arrival_info_list.find("busarrivalitem")
+            location, low_plate, predict_time, remained_seat = \
+                arrival_info_list.find("locationno1").text, \
+                arrival_info_list.find("lowplate1").text, \
+                arrival_info_list.find("predicttime1").text, \
+                arrival_info_list.find("remainseatcnt1").text
+            arrival_list.append({
+                "location": location,
+                "lowPlate": low_plate,
+                "remainedTime": predict_time,
+                "remainedSeat": remained_seat,
+            })
 
-            xml_body = response_xml.find("msgBody")
-            if xml_body is None:
-                return []
-            message_body = xml_body[0]
-            arrival_list = []
-            location_1 = message_body.find("locationNo1")
-            if len(location_1) > 0:
-                low_plate_1 = message_body.find("lowPlate1")
-                predict_time_1 = message_body.find("predictTime1")
-                remained_seat_1 = message_body.find("remainSeatCnt1")
-                arrival_list.append(
-                    BusRealtimeItem(
-                        location_1.text,
-                        low_plate_1.text,
-                        predict_time_1.text,
-                        remained_seat_1.text,
-                    ).dict()
-                )
-                location_2 = message_body.find("locationNo2")
-                if len(location_2) > 0:
-                    low_plate_2 = message_body.find("lowPlate2")
-                    predict_time_2 = message_body.find("predictTime2")
-                    remained_seat_2 = message_body.find("remainSeatCnt2")
-                    arrival_list.append(
-                        BusRealtimeItem(
-                            location_2.text,
-                            low_plate_2.text,
-                            predict_time_2.text,
-                            remained_seat_2.text,
-                        ).dict()
-                    )
+            if arrival_info_list.find("locationno2") and \
+                    arrival_info_list.find("locationno2").text and \
+                    arrival_info_list.find("predicttime2").text:
+                location, low_plate, predict_time, remained_seat = \
+                    arrival_info_list.find("locationno2").text, \
+                    arrival_info_list.find("lowplate2").text, \
+                    arrival_info_list.find("predicttime2").text, \
+                    arrival_info_list.find("remainseatcnt2").text
+                arrival_list.append({
+                    "location": location,
+                    "lowPlate": low_plate,
+                    "remainedTime": predict_time,
+                    "remainedSeat": remained_seat,
+                })
             redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
             async with redis_client.client() as connection:
                 await connection.set(f"{stop_id}_{route_id}_arrival",

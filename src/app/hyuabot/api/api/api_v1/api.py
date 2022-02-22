@@ -15,4 +15,4 @@ shuttle_router.include_router(shuttle_location.location_router, tags=["Shuttle L
 shuttle_router.include_router(shuttle_arrival.arrival_router, tags=["Shuttle Arrival"])
 
 bus_router = APIRouter(prefix="/bus")
-bus_router.include_router(bus_route.route_router, tags=["Bus Route"])
+bus_router.include_router(bus_route.arrival_router, tags=["Bus Route"])
