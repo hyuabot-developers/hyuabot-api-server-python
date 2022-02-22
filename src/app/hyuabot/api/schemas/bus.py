@@ -25,5 +25,4 @@ class BusDepartureByLine(BaseModel):
 
 
 class BusStopInformationResponse(BaseModel):
-    stop_name: str = Field(alias="stopName", title="정류장 이름", description="예시: 한양대컨벤션센터")
     departure_list: list[BusDepartureByLine] = Field(alias="departureInfoList", title="노선별 도착 정보")

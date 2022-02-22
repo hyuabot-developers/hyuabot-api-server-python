@@ -47,6 +47,8 @@ async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
         async with session.get(url, params=params) as response:
             soup = BeautifulSoup(await response.text(), "lxml")
             arrival_info_list = soup.find("response").find("msgbody")
+            if arrival_info_list is None:
+                return []
             arrival_info_list = arrival_info_list.find("busarrivalitem")
             location, low_plate, predict_time, remained_seat = \
                 arrival_info_list.find("locationno1").text, \
