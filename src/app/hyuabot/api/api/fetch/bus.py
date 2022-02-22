@@ -79,7 +79,7 @@ async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
             redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
             async with redis_client.client() as connection:
                 await connection.set(f"{stop_id}_{route_id}_arrival",
-                               json.dumps(arrival_list, ensure_ascii=False).encode("utf-8"))
+                                     json.dumps(arrival_list, ensure_ascii=False).encode("utf-8"))
                 await connection.set(f"{stop_id}_{route_id}_update_time",
                                      datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
                 return arrival_list
