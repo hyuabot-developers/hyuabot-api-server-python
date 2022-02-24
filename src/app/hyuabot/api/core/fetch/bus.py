@@ -33,7 +33,7 @@ async def fetch_bus_realtime_in_a_row() -> JSONResponse:
     for line_name, (line_id, stop_id) in bus_route_dict.items():
         tasks.append(fetch_bus_realtime(line_id, stop_id))
     await asyncio.gather(*tasks)
-    return JSONResponse({"error": "Fetch bus data success"}, status_code=200)
+    return JSONResponse({"message": "Fetch bus data success"}, status_code=200)
 
 
 async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
