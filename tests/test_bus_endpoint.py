@@ -101,7 +101,7 @@ async def test_bus_timetable():
             response_json = response.json()
             for day_key_item in day_keys:
                 assert day_key_item in response_json.keys() and \
-                       type(response_json[day_key_item]) == list[str]
+                       type(response_json[day_key_item]) == list
                 for timetable_item in response_json[day_key_item]:
                     assert len(timetable_item.split(":")) == 3
                     hour, minute, second = timetable_item.split(":")
