@@ -82,17 +82,17 @@ async def store_bus_timetable_redis(url: str, key: str):
 
 # 초기 서버 시작 시 전철 출발 정보 redis 저장
 async def load_subway_timetable():
-    line_keys = ["skyblue", "yellow"]
+    line_keys = [("skyblue", "1004"), ("yellow", "1075")]
     day_keys = ["weekdays", "weekends"]
     heading_keys = ["up", "down"]
 
     base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-subway-timetable/main"
     tasks = []
-    for line in line_keys:
+    for line, line_id in line_keys:
         for day in day_keys:
             for heading in heading_keys:
                 url = f"{base_url}/{line}/{day}/{heading}.csv"
-                key = f"subway_{line}_{day}_{heading}"
+                key = f"subway_{line_id}_{day}_{heading}"
                 tasks.append(store_subway_timetable_redis(url, key))
 
     await asyncio.gather(*tasks)
