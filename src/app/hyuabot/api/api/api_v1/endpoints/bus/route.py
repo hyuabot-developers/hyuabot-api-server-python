@@ -38,7 +38,7 @@ async def fetch_bus_realtime_redis(bus_line_id: str, bus_stop_id: str) -> list:
 
 
 @arrival_router.get("", status_code=200, response_model=BusStopInformationResponse)
-async def fetch_bus_informatione():
+async def fetch_bus_information():
 
     realtime_10_1, realtime_707_1, realtime_3102 = await asyncio.gather(
         fetch_bus_realtime_redis(bus_route_dict["10-1"][0], bus_route_dict["10-1"][1]),
