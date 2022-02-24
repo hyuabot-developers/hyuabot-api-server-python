@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_query, bus_route_dict, \
     timetable_limit, bus_stop_dict
-from app.hyuabot.api.api.fetch.bus import fetch_bus_timetable_redis, fetch_bus_realtime
+from app.hyuabot.api.core.fetch.bus import fetch_bus_timetable_redis, fetch_bus_realtime
 from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse
 
 arrival_router = APIRouter(prefix="/arrival")

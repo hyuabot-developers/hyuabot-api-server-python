@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_query, bus_route_dict
-from app.hyuabot.api.api.fetch.bus import fetch_bus_timetable_redis
+from app.hyuabot.api.core.fetch.bus import fetch_bus_timetable_redis
 from app.hyuabot.api.schemas.bus import BusTimetable
 
 timetable_router = APIRouter(prefix="/timetable")
