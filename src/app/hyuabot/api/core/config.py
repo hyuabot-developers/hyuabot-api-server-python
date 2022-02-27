@@ -20,4 +20,5 @@ class Settings(BaseSettings):
         else:
             raise ValueError("METRO_AUTH is not set")
 
+
 settings = Settings()
