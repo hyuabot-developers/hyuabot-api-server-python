@@ -2,11 +2,11 @@ import json
 from datetime import datetime
 
 import aioredis
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type, shuttle_stop_query
-from app.hyuabot.api.core.config import settings
+from app.hyuabot.api.core.database import get_redis_connection
 from app.hyuabot.api.core.date import get_shuttle_term
 from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepartureItem
 
@@ -14,7 +14,8 @@ arrival_router = APIRouter(prefix="/arrival")
 
 
 @arrival_router.get("/station", status_code=200, response_model=ShuttleDepartureByStop)
-async def fetch_arrival_list_by_stop(shuttle_stop: str = shuttle_stop_query):
+async def fetch_arrival_list_by_stop(
+        shuttle_stop: str = shuttle_stop_query, redis_client=Depends(get_redis_connection)):
     if shuttle_stop not in shuttle_stop_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 정류장입니다."})
 
@@ -26,8 +27,7 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str = shuttle_stop_query):
         })
 
     now = datetime.now()
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
-    async with redis_client.client() as connection:
+    async with redis_client as connection:
         key = f"shuttle_{current_term}_{weekdays_keys}"
         json_string: bytes = await connection.get(key)
         timetable: list[dict] = json.loads(json_string.decode("utf-8"))

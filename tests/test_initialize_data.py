@@ -2,22 +2,24 @@ import json
 import re
 
 import aioredis
+from httpx import AsyncClient
 import pytest
 
-from app.hyuabot.api.core.config import settings
+from app.hyuabot.api import AppSettings
 from app.hyuabot.api.initialize_data import load_shuttle_timetable, store_shuttle_date_redis, \
     load_bus_timetable, load_subway_timetable
 
 
 @pytest.mark.asyncio
 async def test_store_shuttle_timetable():
-    await load_shuttle_timetable()
-
     term_keys = ["semester", "vacation", "vacation_session"]
     day_keys = ["weekdays", "weekends"]
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
 
-    async with redis_client.client() as connection:
+    app_setting = AppSettings()
+    redis_connection_pool = aioredis.from_url(app_setting.REDIS_URI)
+    await load_shuttle_timetable(redis_connection_pool)
+
+    async with redis_connection_pool.client() as connection:
         for term in term_keys:
             for day in day_keys:
                 key = f"shuttle_{term}_{day}"
@@ -35,15 +37,17 @@ async def test_store_shuttle_timetable():
                     assert 0 <= int(minute) < 60
 
                     assert shuttle_time["type"] in ["DH", "DY", "C"]
+    await redis_connection_pool.close()
 
 
 @pytest.mark.asyncio
 async def test_store_shuttle_date():
-    await store_shuttle_date_redis()
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+    app_setting = AppSettings()
+    redis_connection_pool = aioredis.from_url(app_setting.REDIS_URI)
     date_regex = re.compile(r"^\d{1,2}/\d{1,2}$")
 
-    async with redis_client.client() as connection:
+    await store_shuttle_date_redis(redis_connection_pool)
+    async with redis_connection_pool.client() as connection:
         key = "shuttle_date"
         json_string: bytes = await connection.get(key)
         date_json: dict = json.loads(json_string.decode("utf-8"))
@@ -62,17 +66,19 @@ async def test_store_shuttle_date():
 
                     assert date_regex.match(term["start"])
                     assert date_regex.match(term["end"])
+    await redis_connection_pool.close()
 
 
 @pytest.mark.asyncio
 async def test_store_bus_timetable():
-    await load_bus_timetable()
-
     day_keys = ["weekdays", "saturday", "sunday"]
     line_keys = ["10-1", "707-1", "3102"]
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
 
-    async with redis_client.client() as connection:
+    app_setting = AppSettings()
+    redis_connection_pool = aioredis.from_url(app_setting.REDIS_URI)
+    await load_bus_timetable(redis_connection_pool)
+
+    async with redis_connection_pool.client() as connection:
         for line in line_keys:
             for day in day_keys:
                 key = f"bus_{line}_{day}"
@@ -80,24 +86,25 @@ async def test_store_bus_timetable():
                 timetable: list[str] = json.loads(json_string.decode("utf-8"))
 
                 assert len(timetable) > 0
-                print(timetable)
                 for bus_time in timetable:
                     assert ":" in bus_time
                     hour, minute = bus_time.split(":")
                     assert 0 <= int(hour) < 24
                     assert 0 <= int(minute) < 60
+    await redis_connection_pool.close()
 
 
 @pytest.mark.asyncio
 async def test_store_subway_timetable():
-    await load_subway_timetable()
-
     line_keys = ["skyblue", "yellow"]
     day_keys = ["weekdays", "weekends"]
     heading_keys = ["up", "down"]
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
 
-    async with redis_client.client() as connection:
+    app_setting = AppSettings()
+    redis_connection_pool = aioredis.from_url(app_setting.REDIS_URI)
+    await load_subway_timetable(redis_connection_pool)
+
+    async with redis_connection_pool.client() as connection:
         for line in line_keys:
             for day in day_keys:
                 for heading in heading_keys:
@@ -115,3 +122,4 @@ async def test_store_subway_timetable():
                         assert 0 <= int(hour) < 24
                         assert 0 <= int(minute) < 60
                         assert 0 <= int(seconds) < 60
+    await redis_connection_pool.close()

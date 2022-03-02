@@ -2,23 +2,25 @@ import json
 from datetime import datetime
 from typing import Tuple
 
-import aioredis
 import holidays
+from fastapi import Depends
 from korean_lunar_calendar import KoreanLunarCalendar
 
-from app.hyuabot.api.core.config import settings
+from app.hyuabot.api.core.database import get_redis_connection
 
 
-async def get_shuttle_term(date: datetime = datetime.now()) -> Tuple[bool, str, str]:
+async def get_shuttle_term(
+    date: datetime = datetime.now(), redis_client=Depends(get_redis_connection)
+) -> Tuple[bool, str, str]:
     """
     오늘 날짜에 대한 셔틀 운행 타입을 반환합니다.
+    :param redis_client:
     :param date: 날짜
     :return:
     셔틀 운행 여부(True/False),
     셔틀 운행 타입(semester, vacation, vacation_session)
     """
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
-    async with redis_client.client() as connection:
+    async with redis_client as connection:
         key = "shuttle_date"
         json_string: bytes = await connection.get(key)
         date_json: dict = json.loads(json_string.decode("utf-8"))

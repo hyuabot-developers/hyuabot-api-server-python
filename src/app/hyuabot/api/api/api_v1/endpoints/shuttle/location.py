@@ -5,7 +5,6 @@ import aioredis
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.hyuabot.api.core.config import settings
 from app.hyuabot.api.core.date import get_shuttle_term
 from app.hyuabot.api.schemas.shuttle import ShuttleListResponse, ShuttleListItem
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type, shuttle_type_query
