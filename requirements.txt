@@ -5,3 +5,7 @@ pydantic>=1.9.0
 hypercorn>=0.13.2
 aiohttp>=3.8.1
 setuptools>=58.1.0
+beautifulsoup4>=4.10.0
+starlette>=0.17.1
+pytest>=7.0.1
+httpx>=0.22.0
