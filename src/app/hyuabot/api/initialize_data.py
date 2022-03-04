@@ -2,14 +2,16 @@ import asyncio
 import csv
 import json
 
-import aioredis
 from aiohttp import ClientSession
-
-from .core.config import settings
-
+from aioredis import Redis
 
 # 초기 서버 시작 시 셔틀 버스 정보 redis 저장
+from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
+
+
 async def load_shuttle_timetable():
+    redis_connection = await get_redis_connection("shuttle")
+
     term_keys = ["semester", "vacation", "vacation_session"]
     day_keys = ["week", "weekend"]
     day_dict = {"week": "weekdays", "weekend": "weekends"}
@@ -20,13 +22,13 @@ async def load_shuttle_timetable():
         for day in day_keys:
             url = f"{base_url}/{term}/{day}.csv"
             key = f"shuttle_{term}_{day_dict[day]}"
-            tasks.append(store_shuttle_timetable_redis(url, key))
+            tasks.append(store_shuttle_timetable_redis(redis_connection, url, key))
 
     await asyncio.gather(*tasks)
+    await redis_connection.close()
 
 
-async def store_shuttle_timetable_redis(url: str, key: str):
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+async def store_shuttle_timetable_redis(redis_connection: Redis, url: str, key: str):
     async with ClientSession() as session:
         async with session.get(url) as response:
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
@@ -36,24 +38,28 @@ async def store_shuttle_timetable_redis(url: str, key: str):
                     "type": shuttle_type,
                     "time": shuttle_time,
                 })
-            async with redis_client.client() as connection:
-                await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
+            await set_redis_value(redis_connection, key,
+                                  json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
 
 
 async def store_shuttle_date_redis():
+    redis_connection = await get_redis_connection("shuttle")
+
     url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main/date.json"
     key = "shuttle_date"
 
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
     async with ClientSession() as session:
         async with session.get(url) as response:
             date = json.loads(await response.text())
-            async with redis_client.client() as connection:
-                await connection.set(key, json.dumps(date, ensure_ascii=False).encode("utf-8"))
+            await set_redis_value(redis_connection, key,
+                                  json.dumps(date, ensure_ascii=False).encode("utf-8"))
+    await redis_connection.close()
 
 
 # 초기 서버 시작 시 노선 버스 정보 redis 저장
 async def load_bus_timetable():
+    redis_connection = await get_redis_connection("bus")
+
     day_keys = ["weekdays", "saturday", "sunday"]
     line_keys = ["10-1", "707-1", "3102"]
 
@@ -63,21 +69,21 @@ async def load_bus_timetable():
         for day in day_keys:
             url = f"{base_url}/{line}/{day}/timetable.csv"
             key = f"bus_{line}_{day}"
-            tasks.append(store_bus_timetable_redis(url, key))
+            tasks.append(store_bus_timetable_redis(redis_connection.client(), url, key))
 
     await asyncio.gather(*tasks)
+    await redis_connection.close()
 
 
-async def store_bus_timetable_redis(url: str, key: str):
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+async def store_bus_timetable_redis(redis_connection: Redis, url: str, key: str):
     async with ClientSession() as session:
         async with session.get(url) as response:
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
             timetable: list[str] = []
             for bus_arrival_time in reader:
                 timetable.append(bus_arrival_time[0])
-            async with redis_client.client() as connection:
-                await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
+            await set_redis_value(redis_connection, key,
+                                  json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
 
 
 # 초기 서버 시작 시 전철 출발 정보 redis 저장
@@ -96,10 +102,10 @@ async def load_subway_timetable():
                 tasks.append(store_subway_timetable_redis(url, key))
 
     await asyncio.gather(*tasks)
+    await redis_connection.close()
 
 
-async def store_subway_timetable_redis(url: str, key: str):
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+async def store_subway_timetable_redis(redis_connection: Redis, url: str, key: str):
     async with ClientSession() as session:
         async with session.get(url) as response:
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
@@ -109,8 +115,8 @@ async def store_subway_timetable_redis(url: str, key: str):
                     "terminalStation": terminate_station,
                     "departureTime": departure_time,
                 })
-            async with redis_client.client() as connection:
-                await connection.set(key, json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
+            await set_redis_value(redis_connection, key,
+                                  json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
 
 
 async def initialize_data():

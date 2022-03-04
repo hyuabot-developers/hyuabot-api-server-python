@@ -1,9 +1,8 @@
 import pytest as pytest
 from httpx import AsyncClient
 
+from app.hyuabot.api import AppSettings, create_app
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type, shuttle_stop_type
-from app.hyuabot.api.core.config import settings
-from app.hyuabot.api.main import app
 
 
 def check_shuttle_station_item(station_item: dict):
@@ -15,10 +14,12 @@ def check_shuttle_station_item(station_item: dict):
 
 @pytest.mark.asyncio
 async def test_shuttle_station_list():
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
+    app_settings = AppSettings()
+
+    async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
         for shuttle_type in shuttle_line_type:
-            response = await client.get(f"{settings.API_V1_STR}/shuttle/route/station",
-                                        params={"shuttleType": shuttle_type})
+            response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/route/station",
+                                            params={"shuttleType": shuttle_type})
             response_json = response.json()
 
             assert response.status_code == 200
@@ -31,10 +32,11 @@ async def test_shuttle_station_list():
 
 @pytest.mark.asyncio
 async def test_shuttle_around_station():
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-        response = await client.get(f"{settings.API_V1_STR}/shuttle/station/around",
-                                    params={"latitude": 37.29246290291605,
-                                            "longitude": 126.8359786509412})
+    app_settings = AppSettings()
+    async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
+        response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/station/around",
+                                        params={"latitude": 37.29246290291605,
+                                                "longitude": 126.8359786509412})
         assert response.status_code == 200
         response_json = response.json()
         check_shuttle_station_item(response_json)
@@ -42,10 +44,11 @@ async def test_shuttle_around_station():
 
 @pytest.mark.asyncio
 async def test_shuttle_location():
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
+    app_settings = AppSettings()
+    async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
         for shuttle_type in shuttle_line_type:
-            response = await client.get(f"{settings.API_V1_STR}/shuttle/location",
-                                        params={"shuttleType": shuttle_type})
+            response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/location",
+                                            params={"shuttleType": shuttle_type})
             assert response.status_code == 200
             response_json = response.json()
 
@@ -62,10 +65,11 @@ async def test_shuttle_location():
 
 @pytest.mark.asyncio
 async def test_shuttle_arrival_list():
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
+    app_settings = AppSettings()
+    async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
         for shuttle_stop in shuttle_stop_type:
-            response = await client.get(f"{settings.API_V1_STR}/shuttle/arrival/station",
-                                        params={"shuttleStop": shuttle_stop})
+            response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/arrival/station",
+                                            params={"shuttleStop": shuttle_stop})
             response_json = response.json()
 
             assert response.status_code == 200
