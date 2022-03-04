@@ -1,10 +1,8 @@
 import json
 import re
 
-import aioredis
 import pytest
 
-from app.hyuabot.api import AppSettings
 from app.hyuabot.api.core.database import get_redis_connection
 from app.hyuabot.api.initialize_data import load_shuttle_timetable, store_shuttle_date_redis, \
     load_bus_timetable, load_subway_timetable

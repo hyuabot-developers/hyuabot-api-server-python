@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Tuple
 
 import holidays
-from fastapi import Depends
 from korean_lunar_calendar import KoreanLunarCalendar
 
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value

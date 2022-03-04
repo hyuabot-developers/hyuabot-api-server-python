@@ -2,12 +2,11 @@ import asyncio
 import csv
 import json
 
-from aioredis import Redis
 from aiohttp import ClientSession
-
+from aioredis import Redis
 
 # 초기 서버 시작 시 셔틀 버스 정보 redis 저장
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value, set_redis_value
+from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
 
 
 async def load_shuttle_timetable():
