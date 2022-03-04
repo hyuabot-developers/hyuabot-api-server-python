@@ -1,12 +1,11 @@
 import json
 from datetime import datetime
 
-import aioredis
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type, shuttle_stop_query
-from app.hyuabot.api.core.config import settings
+from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term
 from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepartureItem
 
@@ -26,32 +25,31 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str = shuttle_stop_query):
         })
 
     now = datetime.now()
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
-    async with redis_client.client() as connection:
-        key = f"shuttle_{current_term}_{weekdays_keys}"
-        json_string: bytes = await connection.get(key)
-        timetable: list[dict] = json.loads(json_string.decode("utf-8"))
+    redis_connection = await get_redis_connection("shuttle")
+    key = f"shuttle_{current_term}_{weekdays_keys}"
+    json_string: bytes = await get_redis_value(redis_connection, key)
+    timetable: list[dict] = json.loads(json_string.decode("utf-8"))
 
-        shuttle_for_station: list[ShuttleDepartureItem] = []
-        shuttle_for_terminal: list[ShuttleDepartureItem] = []
+    shuttle_for_station: list[ShuttleDepartureItem] = []
+    shuttle_for_terminal: list[ShuttleDepartureItem] = []
 
-        for shuttle_index, shuttle_time in enumerate(timetable):
-            shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M").replace(
-                year=now.year, month=now.month, day=now.day)
-            if shuttle_departure_time < now:
-                continue
-            shuttle_type = shuttle_time["type"]
-            shuttle_item = ShuttleDepartureItem(
-                time=shuttle_time["time"], type=shuttle_time["type"],
-            )
-            if shuttle_type == "DH":
-                shuttle_for_station.append(shuttle_item)
-            elif shuttle_type == "DY":
-                shuttle_for_terminal.append(shuttle_item)
-            else:
-                shuttle_for_station.append(shuttle_item)
-                shuttle_for_terminal.append(shuttle_item)
-
+    for shuttle_index, shuttle_time in enumerate(timetable):
+        shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M").replace(
+            year=now.year, month=now.month, day=now.day)
+        if shuttle_departure_time < now:
+            continue
+        shuttle_type = shuttle_time["type"]
+        shuttle_item = ShuttleDepartureItem(
+            time=shuttle_time["time"], type=shuttle_time["type"],
+        )
+        if shuttle_type == "DH":
+            shuttle_for_station.append(shuttle_item)
+        elif shuttle_type == "DY":
+            shuttle_for_terminal.append(shuttle_item)
+        else:
+            shuttle_for_station.append(shuttle_item)
+            shuttle_for_terminal.append(shuttle_item)
+    await redis_connection.close()
     return ShuttleDepartureByStop(
         message="정상 처리되었습니다.",
         busForStation=shuttle_for_station,
