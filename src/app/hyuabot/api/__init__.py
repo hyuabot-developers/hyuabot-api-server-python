@@ -1,8 +1,5 @@
 __version__ = "1.0.0-alpha1"
 
-import functools
-
-from aioredis import Redis
 from fastapi import FastAPI
 
 from app.hyuabot.api.api.api_v1 import API_V1_ROUTERS
