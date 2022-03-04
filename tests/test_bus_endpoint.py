@@ -2,6 +2,7 @@ import pytest as pytest
 from httpx import AsyncClient
 
 from app.hyuabot.api.main import app
+from app.hyuabot.api.initialize_data import initialize_data
 from app.hyuabot.api.core.config import AppSettings
 
 
@@ -12,6 +13,7 @@ bus_route_keys = ["10-1", "707-1", "3102"]
 @pytest.mark.asyncio
 async def test_bus_arrival():
     app_settings = AppSettings()
+    await initialize_data()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival")
         response_json = response.json()
@@ -55,6 +57,7 @@ async def test_bus_arrival():
 @pytest.mark.asyncio
 async def test_bus_arrival_by_route():
     app_settings = AppSettings()
+    await initialize_data()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for bus_route in bus_route_keys:
             response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival/route",
@@ -97,6 +100,7 @@ async def test_bus_arrival_by_route():
 @pytest.mark.asyncio
 async def test_bus_timetable():
     app_settings = AppSettings()
+    await initialize_data()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for bus_route in bus_route_keys:
             response = await client.get(f"{app_settings.API_V1_STR}/bus/timetable",
