@@ -11,6 +11,7 @@ def create_app(app_settings: AppSettings) -> FastAPI:
     app = FastAPI()
     app.add_event_handler("startup", _web_app_startup)
 
+    app.extra["settings"] = app_settings
     for router in API_V1_ROUTERS:
         app.include_router(router, prefix=app_settings.API_V1_STR)
     return app
@@ -18,3 +19,4 @@ def create_app(app_settings: AppSettings) -> FastAPI:
 
 async def _web_app_startup() -> None:
     await initialize_data()
+

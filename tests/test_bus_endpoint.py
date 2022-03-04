@@ -1,8 +1,8 @@
 import pytest as pytest
 from httpx import AsyncClient
 
-from app.hyuabot.api.core.config import settings
 from app.hyuabot.api.main import app
+from app.hyuabot.api.core.config import AppSettings
 
 
 day_keys = ["weekdays", "saturday", "sunday"]
@@ -11,8 +11,9 @@ bus_route_keys = ["10-1", "707-1", "3102"]
 
 @pytest.mark.asyncio
 async def test_bus_arrival():
+    app_settings = AppSettings()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-        response = await client.get(f"{settings.API_V1_STR}/bus/arrival")
+        response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival")
         response_json = response.json()
 
         assert response.status_code == 200
@@ -53,9 +54,10 @@ async def test_bus_arrival():
 
 @pytest.mark.asyncio
 async def test_bus_arrival_by_route():
+    app_settings = AppSettings()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for bus_route in bus_route_keys:
-            response = await client.get(f"{settings.API_V1_STR}/bus/arrival/route",
+            response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival/route",
                                         params={"busLineID": bus_route, "count": 2})
             response_json = response.json()
 
@@ -94,9 +96,10 @@ async def test_bus_arrival_by_route():
 
 @pytest.mark.asyncio
 async def test_bus_timetable():
+    app_settings = AppSettings()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for bus_route in bus_route_keys:
-            response = await client.get(f"{settings.API_V1_STR}/bus/timetable",
+            response = await client.get(f"{app_settings.API_V1_STR}/bus/timetable",
                                         params={"busLineID": bus_route, "count": 2})
             response_json = response.json()
             for day_key_item in day_keys:

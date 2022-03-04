@@ -2,14 +2,12 @@ import asyncio
 import datetime
 import json
 
-import aioredis
-
-from app.hyuabot.api.core.config import settings
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_query, bus_route_dict, \
     timetable_limit, bus_stop_dict
+from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.fetch.bus import fetch_bus_timetable_redis, fetch_bus_realtime
 from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse
 
@@ -18,23 +16,21 @@ arrival_router = APIRouter(prefix="/arrival")
 
 async def fetch_bus_realtime_redis(bus_line_id: str, bus_stop_id: str) -> list:
     now = datetime.datetime.now()
-    redis_client = aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
-    async with redis_client.client() as connection:
-        update_time, arrival_list_string = await connection.mget(
-            f"{bus_stop_id}_{bus_line_id}_update_time",
-            f"{bus_stop_id}_{bus_line_id}_arrival",
-        )
+    redis_connection = await get_redis_connection("bus")
+    update_time = await get_redis_value(redis_connection, f"{bus_stop_id}_{bus_line_id}_update_time")
+    arrival_list_string = await get_redis_value(redis_connection, f"{bus_stop_id}_{bus_line_id}_arrival")
 
-        arrival_list: list[dict] = []
-        if update_time is not None:
-            updated_before = (now - datetime.datetime.strptime(
-                update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S")
-            ).seconds
-            if updated_before < 60:
-                arrival_list = json.loads(arrival_list_string.decode("utf-8"))
-        if not arrival_list:
-            arrival_list = await fetch_bus_realtime(bus_stop_id, bus_line_id)
-        return arrival_list
+    arrival_list: list[dict] = []
+    if update_time is not None:
+        updated_before = (now - datetime.datetime.strptime(
+            update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S")
+        ).seconds
+        if updated_before < 60:
+            arrival_list = json.loads(arrival_list_string.decode("utf-8"))
+    if not arrival_list:
+        arrival_list = await fetch_bus_realtime(bus_stop_id, bus_line_id)
+    await redis_connection.close()
+    return arrival_list
 
 
 @arrival_router.get("", status_code=200, response_model=BusStopInformationResponse)
