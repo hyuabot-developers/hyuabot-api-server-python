@@ -88,6 +88,7 @@ async def store_bus_timetable_redis(redis_connection: Redis, url: str, key: str)
 
 # 초기 서버 시작 시 전철 출발 정보 redis 저장
 async def load_subway_timetable():
+    redis_connection = await get_redis_connection("subway")
     line_keys = [("skyblue", "1004"), ("yellow", "1075")]
     day_keys = ["weekdays", "weekends"]
     heading_keys = ["up", "down"]
@@ -99,7 +100,7 @@ async def load_subway_timetable():
             for heading in heading_keys:
                 url = f"{base_url}/{line}/{day}/{heading}.csv"
                 key = f"subway_{line_id}_{day}_{heading}"
-                tasks.append(store_subway_timetable_redis(url, key))
+                tasks.append(store_subway_timetable_redis(redis_connection, url, key))
 
     await asyncio.gather(*tasks)
     await redis_connection.close()
