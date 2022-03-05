@@ -38,10 +38,11 @@ async def fetch_reading_room_api(campus_name: str, campus_id: int) -> list[dict]
                 reading_room_item = {
                     "name": reading_room_result_item["name"],
                     "isActive": reading_room_result_item["isActive"],
-                    "totalSeat": reading_room_result_item["total"],
-                    "activeSeat": reading_room_result_item["activeTotal"],
-                    "usedSeat": reading_room_result_item["occupied"],
-                    "availableSeat": reading_room_result_item["available"],
+                    "isReservable": reading_room_result_item["isReservable"],
+                    "total": reading_room_result_item["total"],
+                    "activeTotal": reading_room_result_item["activeTotal"],
+                    "occupied": reading_room_result_item["occupied"],
+                    "available": reading_room_result_item["available"],
                 }
                 reading_room_result.append(reading_room_item)
     redis_connection = await get_redis_connection("reading_room")
