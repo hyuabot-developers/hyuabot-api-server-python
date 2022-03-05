@@ -12,6 +12,7 @@ from app.hyuabot.api.core.database import get_redis_connection, get_redis_value,
 
 fetch_bus_router = APIRouter(prefix="/bus")
 
+
 @fetch_bus_router.get("", status_code=200)
 async def fetch_bus_realtime_in_a_row() -> JSONResponse:
     bus_route_dict = {
@@ -75,6 +76,7 @@ async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
             await redis_connection.close()
 
             return arrival_list
+
 
 async def fetch_bus_timetable_redis(route_id: str, day_key: str) -> list:
     redis_connection = await get_redis_connection("bus")
