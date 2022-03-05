@@ -9,15 +9,14 @@ from starlette.responses import JSONResponse
 from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
 
 fetch_reading_room_router = APIRouter(prefix="/library")
+campus_id_dict = {
+    "seoul": 1,
+    "erica": 2,
+}
 
 
 @fetch_reading_room_router.get("", status_code=200)
 async def fetch_reading_room() -> JSONResponse:
-    campus_id_dict = {
-        "seoul": 1,
-        "erica": 2,
-    }
-
     tasks = []
     for campus_name, campus_id in campus_id_dict.items():
         tasks.append(fetch_reading_room_api(campus_name, campus_id))
