@@ -28,9 +28,8 @@ async def fetch_reading_room() -> JSONResponse:
 async def fetch_reading_room_api(campus_name: str, campus_id: int) -> list[dict]:
     url = f"https://lib.hanyang.ac.kr/smufu-api/pc/{campus_id}/rooms-at-seat"
 
-    timeout = aiohttp.ClientTimeout(total=3.0)
     reading_room_result = []
-    async with aiohttp.ClientSession(timeout=timeout) as session:
+    async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             response_json = await response.json()
             reading_room_list: list = response_json["data"]["list"]
