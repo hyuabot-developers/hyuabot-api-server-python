@@ -4,24 +4,15 @@ from datetime import datetime
 
 import aiohttp
 from bs4 import BeautifulSoup
+from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 from app.hyuabot.api.core.config import AppSettings
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value, set_redis_value
-from app.hyuabot.api.core.fetch import fetch_router
 
+fetch_bus_router = APIRouter(prefix="/bus")
 
-async def fetch_bus_timetable_redis(route_id: str, day_key: str) -> list:
-    redis_connection = await get_redis_connection("bus")
-
-    key = f"bus_{route_id}_{day_key}"
-    json_string: bytes = await get_redis_value(redis_connection, key)
-    timetable: list[str] = json.loads(json_string.decode("utf-8"))
-    await redis_connection.close()
-    return timetable
-
-
-@fetch_router.get("/bus", status_code=200)
+@fetch_bus_router.get("", status_code=200)
 async def fetch_bus_realtime_in_a_row() -> JSONResponse:
     bus_route_dict = {
         "10-1": ("216000068", "216000379"),
@@ -84,3 +75,12 @@ async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
             await redis_connection.close()
 
             return arrival_list
+
+async def fetch_bus_timetable_redis(route_id: str, day_key: str) -> list:
+    redis_connection = await get_redis_connection("bus")
+
+    key = f"bus_{route_id}_{day_key}"
+    json_string: bytes = await get_redis_value(redis_connection, key)
+    timetable: list[str] = json.loads(json_string.decode("utf-8"))
+    await redis_connection.close()
+    return timetable
