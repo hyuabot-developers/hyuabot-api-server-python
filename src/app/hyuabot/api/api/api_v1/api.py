@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import route as shuttle_route, \
                                                             stop as shuttle_stop, \
                                                             location as shuttle_location, \
