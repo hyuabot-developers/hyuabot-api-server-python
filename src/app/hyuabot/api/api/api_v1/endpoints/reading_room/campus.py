@@ -16,4 +16,5 @@ async def fetch_reading_room_by_campus(campus_name: str = campus_query):
     key = f"{campus_name.lower()}_reading_room"
     json_string: bytes = await get_redis_value(redis_connection, key)
     reading_room_list: list[ReadingRoomItem] = json.loads(json_string.decode("utf-8"))
+    await redis_connection.close()
     return reading_room_list
