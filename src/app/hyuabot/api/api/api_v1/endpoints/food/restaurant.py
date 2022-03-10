@@ -22,12 +22,12 @@ restaurant_id_dict = {
     "changbo_erica": "창업보육센터",
 }
 
-restaurant_router = APIRouter(prefix="/restaurant")
+restaurant_router = APIRouter(prefix="/food")
 restaurant_router.include_router(restaurant_menu_campus_router,
                                  tags=["Restaurant Menu By Campus"])
 
 
-@restaurant_router.get("/", status_code=200, response_model=CafeteriaItem, tags=["Restaurant Menu"])
+@restaurant_router.get("", status_code=200, response_model=CafeteriaItem, tags=["Restaurant Menu"])
 async def fetch_restaurant(restaurant_id: str = restaurant_query):
     if restaurant_id in restaurant_id_dict.keys():
         redis_connection = await get_redis_connection("restaurant")

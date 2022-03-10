@@ -38,9 +38,10 @@ async def test_restaurant_menu_by_campus():
                 assert "name" in restaurant.keys() and type(restaurant["name"]) == str
                 assert "workingTime" in restaurant.keys() and type(restaurant["workingTime"]) == str
                 assert "menuList" in restaurant.keys() and type(restaurant["menuList"]) == dict
-                for menu in restaurant["menuList"].values():
-                    assert "menu" in menu.keys() and type(menu["menu"]) == str
-                    assert "price" in menu.keys() and type(menu["price"]) == str
+                for menu_list in restaurant["menuList"].values():
+                    for menu in menu_list:
+                        assert "menu" in menu.keys() and type(menu["menu"]) == str
+                        assert "price" in menu.keys() and type(menu["price"]) == str
 
 
 @pytest.mark.asyncio
@@ -53,9 +54,10 @@ async def test_restaurant_menu():
             response_json = response.json()
 
             assert response.status_code == 200
-            assert "name" in response_json.keys() and type(response_json["name"]) == restaurant_name
+            assert "name" in response_json.keys() and response_json["name"] == restaurant_name
             assert "workingTime" in response_json.keys() and type(response_json["workingTime"]) == str
             assert "menuList" in response_json.keys() and type(response_json["menuList"]) == dict
-            for menu in response_json["menuList"].values():
-                assert "menu" in menu.keys() and type(menu["menu"]) == str
-                assert "price" in menu.keys() and type(menu["price"]) == str
+            for menu_list in response_json["menuList"].values():
+                for menu in menu_list:
+                    assert "menu" in menu.keys() and type(menu["menu"]) == str
+                    assert "price" in menu.keys() and type(menu["price"]) == str
