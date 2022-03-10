@@ -2,6 +2,7 @@ import asyncio
 import json
 from typing import Dict, Any
 
+import requests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
@@ -13,10 +14,6 @@ fetch_restaurant_menu_router = APIRouter(prefix="/food")
 
 @fetch_restaurant_menu_router.get("", status_code=200)
 async def fetch_reading_room() -> JSONResponse:
-    from gevent import monkey
-    monkey.patch_all()
-    import grequests as grequests
-
     restaurant_id_dict = {
         "student_seoul": "1",
         "life_science_seoul": "2",
@@ -30,14 +27,13 @@ async def fetch_reading_room() -> JSONResponse:
         "food_court_erica": "14",
         "changbo_erica": "15",
     }
-    
     urls = []
     for restaurant_url_key in restaurant_id_dict.values():
         urls.append(f"https://www.hanyang.ac.kr/web/www/re{restaurant_url_key}")
-    responses = [grequests.get(u) for u in urls]
+    responses = [requests.get(u) for u in urls]
 
     tasks = []
-    for restaurant_key, response in zip(restaurant_id_dict.keys(), grequests.map(responses)):
+    for restaurant_key, response in zip(restaurant_id_dict.keys(), responses):
         tasks.append(fetch_restaurant_menu_by_id(restaurant_key, response))
     await asyncio.gather(*tasks)
     return JSONResponse({"message": "Fetch restaurant menu data success"}, status_code=200)
