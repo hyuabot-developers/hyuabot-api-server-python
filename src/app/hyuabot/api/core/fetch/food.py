@@ -55,14 +55,15 @@ async def fetch_restaurant_menu_by_id(restaurant_key: str, response) -> None:
                 cafeteria_info['time'] += f'{txt}\n'
             elif '석식' in txt:
                 cafeteria_info['time'] += f'{txt}\n'
+    cafeteria_info["menu"] = {}
     for inbox in soup.find_all("div", {"class": "in-box"}):
         title = inbox.find("h4").text.strip()
-        cafeteria_info[title] = []
+        cafeteria_info["menu"][title] = []
         for list_item in inbox.find_all("li"):
             if list_item.find("h3"):
                 menu = list_item.find("h3").text.replace("\t", "").replace("\r\n", "")
                 p = list_item.find("p", {"class": "price"}).text
-                cafeteria_info[title].append({"menu": menu, "price": p})
+                cafeteria_info["menu"][title].append({"menu": menu, "price": p})
     redis_connection = await get_redis_connection("restaurant")
     await set_redis_value(redis_connection, restaurant_key,
                           json.dumps(cafeteria_info, ensure_ascii=False).encode("utf-8"))

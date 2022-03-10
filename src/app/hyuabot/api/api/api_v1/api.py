@@ -6,6 +6,7 @@ from app.hyuabot.api.api.api_v1.endpoints.shuttle import route as shuttle_route,
                                                             arrival as shuttle_arrival
 from app.hyuabot.api.api.api_v1.endpoints.bus import route as bus_route, \
                                                         timetable as bus_timetable
+from app.hyuabot.api.api.api_v1.endpoints.food import campus as food_campus, restaurant
 
 
 shuttle_router = APIRouter(prefix="/shuttle")
@@ -17,3 +18,8 @@ shuttle_router.include_router(shuttle_arrival.arrival_router, tags=["Shuttle Arr
 bus_router = APIRouter(prefix="/bus")
 bus_router.include_router(bus_route.arrival_router, tags=["Bus Route"])
 bus_router.include_router(bus_timetable.timetable_router, tags=["Bus Timetable"])
+
+restaurant_router = APIRouter(prefix="/restaurant")
+restaurant_router.include_router(food_campus.restaurant_menu_campus_router,
+                                 tags=["Restaurant Menu By Campus"])
+restaurant_router.include_router(restaurant.restaurant_menu_router, tags=["Restaurant Menu"])
