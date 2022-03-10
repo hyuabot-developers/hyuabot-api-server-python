@@ -18,8 +18,3 @@ shuttle_router.include_router(shuttle_arrival.arrival_router, tags=["Shuttle Arr
 bus_router = APIRouter(prefix="/bus")
 bus_router.include_router(bus_route.arrival_router, tags=["Bus Route"])
 bus_router.include_router(bus_timetable.timetable_router, tags=["Bus Timetable"])
-
-restaurant_router = APIRouter(prefix="/restaurant")
-restaurant_router.include_router(food_campus.restaurant_menu_campus_router,
-                                 tags=["Restaurant Menu By Campus"])
-restaurant_router.include_router(restaurant.restaurant_menu_router, tags=["Restaurant Menu"])

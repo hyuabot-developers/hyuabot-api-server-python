@@ -21,7 +21,7 @@ restaurant_id_dict = {
         "dorm_erica": "창의인재원식당",
         "food_court_erica": "푸드코트",
         "changbo_erica": "창업보육센터",
-    },
+    }
 }
 
 restaurant_menu_campus_router = APIRouter(prefix="/campus")
