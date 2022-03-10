@@ -1,7 +1,6 @@
 import asyncio
 import json
 
-import grequests as grequests
 from bs4 import BeautifulSoup
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
@@ -26,6 +25,10 @@ restaurant_id_dict = {
 
 @fetch_restaurant_menu_router.get("", status_code=200)
 async def fetch_reading_room() -> JSONResponse:
+    from gevent import monkey
+    monkey.patch_all()
+    import grequests as grequests
+
     urls = []
     for restaurant_url_key in restaurant_id_dict.values():
         urls.append(f"https://www.hanyang.ac.kr/web/www/re{restaurant_url_key}")
