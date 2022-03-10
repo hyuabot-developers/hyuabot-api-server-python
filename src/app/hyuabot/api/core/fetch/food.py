@@ -56,7 +56,7 @@ async def fetch_restaurant_menu_by_id(restaurant_key: str, response) -> None:
                 cafeteria_info['time'] += f'{txt}\n'
             elif '석식' in txt:
                 cafeteria_info['time'] += f'{txt}\n'
-    cafeteria_info["menu"]: Dict[str, List] = {}
+    cafeteria_info["menu"] = {}
     for inbox in soup.find_all("div", {"class": "in-box"}):
         title = inbox.find("h4").text.strip()
         cafeteria_info["menu"][title] = []
