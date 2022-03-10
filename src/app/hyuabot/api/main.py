@@ -1,10 +1,6 @@
-import asyncio
-import sys
-
 from hypercorn.config import Config
 
 from app.hyuabot.api import create_app, AppSettings
-
 
 hypercorn_config = Config()
 app_settings = AppSettings()
