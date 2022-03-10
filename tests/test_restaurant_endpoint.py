@@ -16,7 +16,7 @@ restaurant_keys = {
     "student_erica": "학생식당",
     "dorm_erica": "창의인재원식당",
     "food_court_erica": "푸드코트",
-    "changbo_erica": "창업보육센터"
+    "changbo_erica": "창업보육센터",
 }
 
 

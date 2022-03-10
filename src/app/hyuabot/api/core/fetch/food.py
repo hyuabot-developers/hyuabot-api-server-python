@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import Dict, Any
 
 from bs4 import BeautifulSoup
 from fastapi import APIRouter
@@ -19,7 +20,7 @@ restaurant_id_dict = {
     "student_erica": "12",
     "dorm_erica": "13",
     "food_court_erica": "14",
-    "changbo_erica": "15"
+    "changbo_erica": "15",
 }
 
 
@@ -42,7 +43,7 @@ async def fetch_reading_room() -> JSONResponse:
 
 
 async def fetch_restaurant_menu_by_id(restaurant_key: str, response) -> None:
-    cafeteria_info = {}
+    cafeteria_info: Dict[str, Any] = {}
     soup = BeautifulSoup(response.text, "html.parser")
 
     for inbox in soup.find_all("div", {"class": "tab-pane"}):
@@ -55,7 +56,7 @@ async def fetch_restaurant_menu_by_id(restaurant_key: str, response) -> None:
                 cafeteria_info['time'] += f'{txt}\n'
             elif '석식' in txt:
                 cafeteria_info['time'] += f'{txt}\n'
-    cafeteria_info["menu"] = {}
+    cafeteria_info["menu"]: Dict[str, list] = {}
     for inbox in soup.find_all("div", {"class": "in-box"}):
         title = inbox.find("h4").text.strip()
         cafeteria_info["menu"][title] = []
