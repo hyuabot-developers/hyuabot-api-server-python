@@ -1,13 +1,11 @@
 from fastapi import APIRouter
 
-
-from app.hyuabot.api.api.api_v1.endpoints.shuttle import route as shuttle_route, \
-                                                            stop as shuttle_stop, \
-                                                            location as shuttle_location, \
-                                                            arrival as shuttle_arrival
 from app.hyuabot.api.api.api_v1.endpoints.bus import route as bus_route, \
-                                                        timetable as bus_timetable
-
+    timetable as bus_timetable
+from app.hyuabot.api.api.api_v1.endpoints.shuttle import route as shuttle_route, \
+    stop as shuttle_stop, \
+    location as shuttle_location, \
+    arrival as shuttle_arrival
 
 shuttle_router = APIRouter(prefix="/shuttle")
 shuttle_router.include_router(shuttle_route.route_router, tags=["Shuttle Route"])

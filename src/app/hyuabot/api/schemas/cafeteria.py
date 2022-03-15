@@ -10,3 +10,9 @@ class CafeteriaItem(BaseModel):
     name: str = Field(alias="name", title="이름", description="식당 이름")
     working_time: str = Field(alias="workingTime", title="운영 시간", description="예시: 09:00 ~ 21:00")
     menu_list: dict[str, list[MenuItem]] = Field(alias="menuList", title="메뉴 목록", description="식단 목록")
+
+
+class CampusItem(BaseModel):
+    campus_name: str = Field(alias="campus", title="캠퍼스 이름", description="캠퍼스 이름")
+    restaurant_list: list[CafeteriaItem] = Field(alias="restaurantList",
+                                                 title="식당 목록", description="식당 목록")
