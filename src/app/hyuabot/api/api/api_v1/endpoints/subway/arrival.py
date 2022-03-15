@@ -1,14 +1,14 @@
 import asyncio
 import datetime
 import json
-from time import strptime
 
 from fastapi import APIRouter, HTTPException
 
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term
 from app.hyuabot.api.core.fetch.subway import get_subway_realtime_information
-from app.hyuabot.api.schemas.subway import SubwayDepartureResponse, SubwayDepartureByLine, SubwayTimetableList
+from app.hyuabot.api.schemas.subway import \
+    SubwayDepartureResponse, SubwayDepartureByLine, SubwayTimetableList
 
 arrival_router = APIRouter(prefix="/arrival")
 
@@ -49,7 +49,8 @@ async def fetch_subway_realtime_redis(station_name: str, line_id: str) -> tuple[
     now = datetime.datetime.now()
     redis_connection = await get_redis_connection("subway")
     update_time = await get_redis_value(redis_connection, f"subway_{station_name}_{line_id}_update_time")
-    arrival_list_string = await get_redis_value(redis_connection, f"subway_{station_name}_{line_id}_arrival")
+    arrival_list_string = \
+        await get_redis_value(redis_connection, f"subway_{station_name}_{line_id}_arrival")
 
     arrival_list = {}
     if update_time is not None:
@@ -94,7 +95,8 @@ async def fetch_subway_information(campus_name: str):
                 ),
             ],
         )
-    [(main_update_time, main_line_arrival), (sub_update_time, sub_line_arrival)] = await asyncio.gather(*tasks)
+    [(main_update_time, main_line_arrival), (sub_update_time, sub_line_arrival)] = \
+        await asyncio.gather(*tasks)
     return SubwayDepartureResponse(
         stationName=subway_dict[campus_name][0][0],
         departureList=[

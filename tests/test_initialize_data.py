@@ -90,17 +90,17 @@ async def test_store_bus_timetable():
 
 @pytest.mark.asyncio
 async def test_store_subway_timetable():
-    line_keys = ["skyblue", "yellow"]
+    line_keys = ["1004", "1075"]
     day_keys = ["weekdays", "weekends"]
     heading_keys = ["up", "down"]
     await load_subway_timetable()
 
     redis_connection = await get_redis_connection("subway")
     async with redis_connection.client() as connection:
-        for line in line_keys:
+        for line_id in line_keys:
             for day in day_keys:
                 for heading in heading_keys:
-                    key = f"subway_{line}_{day}_{heading}"
+                    key = f"subway_{line_id}_{day}_{heading}"
                     json_string: bytes = await connection.get(key)
                     timetable: list[dict] = json.loads(json_string.decode("utf-8"))
 

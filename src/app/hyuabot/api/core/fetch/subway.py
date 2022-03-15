@@ -16,7 +16,7 @@ fetch_subway_router = APIRouter(prefix="/subway")
 @fetch_subway_router.get("", status_code=200)
 async def fetch_subway_realtime_information() -> JSONResponse:
     tasks = [
-        get_subway_realtime_information("한양대"), get_subway_realtime_information("한대앞")
+        get_subway_realtime_information("한양대"), get_subway_realtime_information("한대앞"),
     ]
     await asyncio.gather(*tasks)
     return JSONResponse({"message": "Fetch subway data success"}, status_code=200)
@@ -27,7 +27,7 @@ async def get_subway_realtime_information(station_name: str) -> dict:
     url = f"http://swopenapi.seoul.go.kr/api/subway/{app_settings.METRO_API_KEY}/json/" \
           f"realtimeStationArrival/0/10/{station_name}"
     timeout = aiohttp.ClientTimeout(total=3.0)
-    arrival_list = {}
+    arrival_list: dict[str, dict] = {}
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(url) as response:
             response_json = await response.json()
@@ -48,7 +48,7 @@ async def get_subway_realtime_information(station_name: str) -> dict:
                 arrival_list[line_id][up_down_key].append({
                     "terminalStation": terminal_station,
                     "currentStation": current_station,
-                    "statusCode": status_code_dict[int(status_code)]
+                    "statusCode": status_code_dict[int(status_code)],
                 })
 
             redis_connection = await get_redis_connection("subway")
