@@ -27,7 +27,7 @@ async def test_subway_arrival():
                 assert "lineName" in departure_info_item.keys() and \
                        type(departure_info_item["lineName"]) == str
                 assert "updatedTime" in departure_info_item.keys() and \
-                       type(departure_info_item["updatedTime"]) == str
+                       type(departure_info_item["updateTime"]) == str
                 assert "realtime" in departure_info_item.keys() and \
                        type(departure_info_item["realtime"]) == dict
 
