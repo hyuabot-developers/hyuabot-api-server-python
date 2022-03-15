@@ -63,6 +63,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      BUS_API_KEY: ${{ secrets.BUS_API_KEY }}
+      METRO_API_KEY: ${{ secrets.METRO_API_KEY }}
     services:
       redis:
         image: redis:6.2.6-alpine

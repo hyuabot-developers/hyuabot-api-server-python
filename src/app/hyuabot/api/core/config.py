@@ -8,4 +8,5 @@ class AppSettings(BaseSettings):
     REDIS_URI: AnyUrl = Field(
         default=f"redis://{os.environ.get('REDIS_HOST', 'localhost')}:"
                 f"{os.environ.get('REDIS_PORT', 6379)}")
-    BUS_API_KEY = Field(default=os.environ.get('BUS_API_KEY', '1234567890'))
+    BUS_API_KEY = Field(default=os.environ.get("BUS_API_KEY", "1234567890"))
+    METRO_API_KEY = Field(default=os.environ.get("METRO_API_KEY", "1234567890"))
