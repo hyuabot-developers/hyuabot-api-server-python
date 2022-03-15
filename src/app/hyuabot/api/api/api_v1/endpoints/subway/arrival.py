@@ -34,7 +34,7 @@ async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> 
 
     for item in timetable:
         item_time = datetime.datetime.strptime(item["departureTime"], "%H:%M:%S").replace(
-            year=now.year, month=now.month, day=now.day
+            year=now.year, month=now.month, day=now.day,
         )
         if item_time.hour < 4:
             item_time += datetime.timedelta(days=1)
