@@ -5,8 +5,7 @@ import json
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_query, bus_route_dict, \
-    timetable_limit, bus_stop_dict
+from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_dict, timetable_limit, bus_stop_dict
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.fetch.bus import fetch_bus_timetable_redis, fetch_bus_realtime
 from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse
@@ -80,8 +79,8 @@ async def fetch_bus_information():
     ])
 
 
-@arrival_router.get("/route", status_code=200, response_model=BusDepartureByLine)
-async def fetch_bus_information_by_route(bus_line_id: str = bus_route_query,
+@arrival_router.get("/route/{bus_line_id}", status_code=200, response_model=BusDepartureByLine)
+async def fetch_bus_information_by_route(bus_line_id: str,
                                          timetable_count: int | None = timetable_limit):
     if bus_line_id not in bus_route_dict.keys():
         return JSONResponse(status_code=404, content={"message": "제공되지 않는 버스 노선입니다."})

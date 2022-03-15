@@ -26,8 +26,7 @@ async def test_restaurant_menu_by_campus():
 
     for campus_key in campus_keys:
         async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-            response = await client.get(f"{app_settings.API_V1_STR}/food/campus"
-                                        f"?campus={campus_key}")
+            response = await client.get(f"{app_settings.API_V1_STR}/food/campus/{campus_key}")
             response_json = response.json()
 
             assert response.status_code == 200
@@ -50,7 +49,7 @@ async def test_restaurant_menu():
 
     for restaurant_key, restaurant_name in restaurant_keys.items():
         async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-            response = await client.get(f"{app_settings.API_V1_STR}/food?restaurant={restaurant_key}")
+            response = await client.get(f"{app_settings.API_V1_STR}/food/restaurant/{restaurant_key}")
             response_json = response.json()
 
             assert response.status_code == 200

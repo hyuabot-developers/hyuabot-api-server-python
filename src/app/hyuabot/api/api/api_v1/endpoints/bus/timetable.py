@@ -3,15 +3,15 @@ import asyncio
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_query, bus_route_dict
+from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_dict
 from app.hyuabot.api.core.fetch.bus import fetch_bus_timetable_redis
 from app.hyuabot.api.schemas.bus import BusTimetable
 
 timetable_router = APIRouter(prefix="/timetable")
 
 
-@timetable_router.get("", status_code=200, response_model=BusTimetable)
-async def fetch_bus_timetable(bus_line_id: str = bus_route_query):
+@timetable_router.get("/{bus_line_id}", status_code=200, response_model=BusTimetable)
+async def fetch_bus_timetable(bus_line_id: str):
     if bus_line_id not in bus_route_dict.keys():
         return JSONResponse(status_code=404, content={"message": "제공되지 않는 버스 노선입니다."})
 

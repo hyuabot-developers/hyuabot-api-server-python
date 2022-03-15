@@ -1,4 +1,3 @@
-# 셔틀버스 노선 타입
 from fastapi import Query
 
 from app.hyuabot.api.schemas.shuttle import ShuttleStop
@@ -38,12 +37,5 @@ shuttle_shuttlecock_i = ShuttleStop(
     longitude=126.8377767466817,
 )
 
-# Query params
-shuttle_type_query = Query(None, alias="shuttleType", description="셔틀버스 종류(DH, DY, C)",
-                           regex="^(DH|DY|C)$", example="DH")
-shuttle_stop_query = Query(None, alias="shuttleStop",
-                           description="셔틀버스 정류장 코드",
-                           regex="^(Dormitory|Shuttlecock_O|Station|Terminal|Shuttlecock_I)$",
-                           example="Dormitory")
 latitude_query = Query(None, alias="latitude", description="위도", example="37.29246290291605")
 longitude_query = Query(None, alias="longitude", description="경도", example="126.8359786509412")
