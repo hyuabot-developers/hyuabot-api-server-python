@@ -24,7 +24,7 @@ async def test_reading_room_by_campus():
     app_settings = AppSettings()
     for campus in campus_keys:
         async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-            response = await client.get(f"{app_settings.API_V1_STR}/library?campus={campus}")
+            response = await client.get(f"{app_settings.API_V1_STR}/library/{campus}")
             response_json = response.json()
 
             assert response.status_code == 200

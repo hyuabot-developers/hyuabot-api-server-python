@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type, shuttle_stop_query
+from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term
 from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepartureItem
@@ -12,8 +12,8 @@ from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepar
 arrival_router = APIRouter(prefix="/arrival")
 
 
-@arrival_router.get("/station", status_code=200, response_model=ShuttleDepartureByStop)
-async def fetch_arrival_list_by_stop(shuttle_stop: str = shuttle_stop_query):
+@arrival_router.get("/{shuttle_stop}", status_code=200, response_model=ShuttleDepartureByStop)
+async def fetch_arrival_list_by_stop(shuttle_stop: str):
     if shuttle_stop not in shuttle_stop_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 정류장입니다."})
 

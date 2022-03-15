@@ -3,8 +3,6 @@ import json
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.food.campus import restaurant_menu_campus_router
-from app.hyuabot.api.api.api_v1.endpoints.reading_room import restaurant_query
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.schemas.cafeteria import CafeteriaItem
 
@@ -22,13 +20,12 @@ restaurant_id_dict = {
     "changbo_erica": "창업보육센터",
 }
 
-restaurant_router = APIRouter(prefix="/food")
-restaurant_router.include_router(restaurant_menu_campus_router,
-                                 tags=["Restaurant Menu By Campus"])
+restaurant_router = APIRouter(prefix="/restaurant")
 
 
-@restaurant_router.get("", status_code=200, response_model=CafeteriaItem, tags=["Restaurant Menu"])
-async def fetch_restaurant(restaurant_id: str = restaurant_query):
+@restaurant_router.get("/{restaurant_id}", status_code=200, response_model=CafeteriaItem,
+                       tags=["Restaurant Menu"])
+async def fetch_restaurant(restaurant_id: str):
     if restaurant_id in restaurant_id_dict.keys():
         redis_connection = await get_redis_connection("restaurant")
         json_string = await get_redis_value(redis_connection, restaurant_id)

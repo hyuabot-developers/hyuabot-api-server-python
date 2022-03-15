@@ -2,7 +2,6 @@ import json
 
 from fastapi import APIRouter
 
-from app.hyuabot.api.api.api_v1.endpoints.reading_room import campus_query
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.schemas.cafeteria import CampusItem
 
@@ -27,8 +26,8 @@ restaurant_id_dict = {
 restaurant_menu_campus_router = APIRouter(prefix="/campus")
 
 
-@restaurant_menu_campus_router.get("", status_code=200, response_model=CampusItem)
-async def fetch_restaurant_by_campus(campus_name: str = campus_query):
+@restaurant_menu_campus_router.get("/{campus_name}", status_code=200, response_model=CampusItem)
+async def fetch_restaurant_by_campus(campus_name: str):
     redis_connection = await get_redis_connection("restaurant")
     restaurant_list = []
     for restaurant_id, restaurant_name in restaurant_id_dict[campus_name].items():

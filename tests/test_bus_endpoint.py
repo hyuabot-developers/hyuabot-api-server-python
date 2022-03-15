@@ -60,8 +60,8 @@ async def test_bus_arrival_by_route():
     await initialize_data()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for bus_route in bus_route_keys:
-            response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival/route",
-                                        params={"busLineID": bus_route, "count": 2})
+            response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival/route/{bus_route}",
+                                        params={"count": 2})
             response_json = response.json()
 
             assert response.status_code == 200
@@ -103,8 +103,8 @@ async def test_bus_timetable():
     await initialize_data()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         for bus_route in bus_route_keys:
-            response = await client.get(f"{app_settings.API_V1_STR}/bus/timetable",
-                                        params={"busLineID": bus_route, "count": 2})
+            response = await client.get(f"{app_settings.API_V1_STR}/bus/timetable/{bus_route}",
+                                        params={"count": 2})
             response_json = response.json()
             for day_key_item in day_keys:
                 assert day_key_item in response_json.keys() and \

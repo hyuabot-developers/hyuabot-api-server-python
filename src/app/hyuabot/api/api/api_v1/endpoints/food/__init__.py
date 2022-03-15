@@ -1,6 +1,9 @@
 # Query params
-from fastapi import Query, APIRouter
+from fastapi import APIRouter
 
-restaurant_menu_router = APIRouter(prefix="/library")
-campus_query = Query(None, alias="campus", description="캠퍼스 ID(seoul/erica)",
-                     regex="^(seoul|erica)$", example="seoul")
+from app.hyuabot.api.api.api_v1.endpoints.food.restaurant import restaurant_router
+from app.hyuabot.api.api.api_v1.endpoints.food.campus import restaurant_menu_campus_router
+
+restaurant_menu_router = APIRouter(prefix="/food")
+restaurant_menu_router.include_router(restaurant_menu_campus_router)
+restaurant_menu_router.include_router(restaurant_router)
