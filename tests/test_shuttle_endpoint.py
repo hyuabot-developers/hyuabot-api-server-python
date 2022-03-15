@@ -18,8 +18,8 @@ async def test_shuttle_station_list():
 
     async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
         for shuttle_type in shuttle_line_type:
-            response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/route/station",
-                                            params={"shuttleType": shuttle_type})
+            url = f"{app_settings.API_V1_STR}/shuttle/route/station/{shuttle_type}"
+            response = await app_client.get(url)
             response_json = response.json()
 
             assert response.status_code == 200
@@ -47,8 +47,7 @@ async def test_shuttle_location():
     app_settings = AppSettings()
     async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
         for shuttle_type in shuttle_line_type:
-            response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/location",
-                                            params={"shuttleType": shuttle_type})
+            response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/location/{shuttle_type}")
             assert response.status_code == 200
             response_json = response.json()
 
@@ -68,8 +67,8 @@ async def test_shuttle_arrival_list():
     app_settings = AppSettings()
     async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
         for shuttle_stop in shuttle_stop_type:
-            response = await app_client.get(f"{app_settings.API_V1_STR}/shuttle/arrival/station",
-                                            params={"shuttleStop": shuttle_stop})
+            url = f"{app_settings.API_V1_STR}/shuttle/arrival/{shuttle_stop}"
+            response = await app_client.get(url)
             response_json = response.json()
 
             assert response.status_code == 200

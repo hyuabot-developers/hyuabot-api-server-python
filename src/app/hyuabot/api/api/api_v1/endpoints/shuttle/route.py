@@ -9,7 +9,8 @@ from app.hyuabot.api.schemas.shuttle import ShuttleRouteStationListResponse
 route_router = APIRouter(prefix="/route")
 
 
-@route_router.get("/station/{shuttle_type}", status_code=200, response_model=ShuttleRouteStationListResponse)
+@route_router.get("/station/{shuttle_type}", status_code=200,
+                  response_model=ShuttleRouteStationListResponse)
 async def fetch_shuttle_route_station_list(shuttle_type: str):
     if shuttle_type not in shuttle_line_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 종류입니다."})
