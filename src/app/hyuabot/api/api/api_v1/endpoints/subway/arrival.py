@@ -25,7 +25,6 @@ async def fetch_subway_timetable(line_id: str) -> dict:
 
 
 async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> list[dict]:
-    korea_standard_time = datetime.timezone(datetime.timedelta(hours=9))
     now = datetime.datetime.now()
 
     redis_connection = await get_redis_connection("subway")
@@ -83,7 +82,7 @@ async def fetch_subway_information(campus_name: str):
         tasks.append(fetch_subway_realtime_redis(station_name, line_id))
 
     if campus_name == "seoul":
-        [main_update_time, main_line_arrival] = await asyncio.gather(*tasks)
+        [(main_update_time, main_line_arrival)] = await asyncio.gather(*tasks)
         return SubwayDepartureResponse(
             stationName=subway_dict[campus_name][0][0],
             departureList=[
