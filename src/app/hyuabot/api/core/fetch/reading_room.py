@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
+from app.hyuabot.api.core.date import korea_standard_time
 
 fetch_reading_room_router = APIRouter(prefix="/library")
 campus_id_dict = {
@@ -47,6 +48,6 @@ async def fetch_reading_room_api(campus_name: str, campus_id: int) -> list[dict]
     await set_redis_value(redis_connection, f"{campus_name}_reading_room",
                           json.dumps(reading_room_result, ensure_ascii=False).encode("utf-8"))
     await set_redis_value(redis_connection, f"{campus_name}_update_time",
-                          datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+                          datetime.now(tz=korea_standard_time).strftime("%m/%d/%Y, %H:%M:%S"))
     await redis_connection.close()
     return reading_room_result

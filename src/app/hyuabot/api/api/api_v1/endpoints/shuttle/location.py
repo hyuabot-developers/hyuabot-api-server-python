@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
-from app.hyuabot.api.core.date import get_shuttle_term
+from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.schemas.shuttle import ShuttleListResponse, ShuttleListItem
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type
 
@@ -24,7 +24,7 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
             "shuttleList": [],
         })
 
-    now = datetime.now()
+    now = datetime.now(tz=korea_standard_time)
     redis_connection = await get_redis_connection("shuttle")
     key = f"shuttle_{current_term}_{weekdays_keys}"
     json_string: bytes = await get_redis_value(redis_connection, key)
@@ -36,7 +36,7 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
     if shuttle_type == "DH" or shuttle_type == "DY":
         for shuttle_index, shuttle_time in enumerate(timetable):
             shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M").replace(
-                year=now.year, month=now.month, day=now.day)
+                year=now.year, month=now.month, day=now.day, tzinfo=korea_standard_time)
             if now - timedelta(minutes=30) <= shuttle_departure_time <= now:
                 last_bus = False
                 if shuttle_departure_time <= now - timedelta(minutes=25):
@@ -64,7 +64,7 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
     else:
         for shuttle_index, shuttle_time in enumerate(timetable):
             shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M").replace(
-                year=now.year, month=now.month, day=now.day)
+                year=now.year, month=now.month, day=now.day, tzinfo=korea_standard_time)
             if now - timedelta(minutes=35) <= shuttle_departure_time <= now:
                 last_bus = False
                 if shuttle_departure_time <= now - timedelta(minutes=30):

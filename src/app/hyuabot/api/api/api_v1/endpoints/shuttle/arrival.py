@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
-from app.hyuabot.api.core.date import get_shuttle_term
+from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepartureItem, \
     ShuttleDeparture
 
@@ -25,7 +25,7 @@ def compare_timetable(shuttle_time: datetime, now: datetime) -> bool:
 async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
                                   weekdays_keys: str, get_all: bool = False) -> \
         Tuple[list[ShuttleDepartureItem], list[ShuttleDepartureItem]]:
-    now = datetime.now()
+    now = datetime.now(tz=korea_standard_time)
     redis_connection = await get_redis_connection("shuttle")
     key = f"shuttle_{current_term}_{weekdays_keys}"
     json_string: bytes = await get_redis_value(redis_connection, key)
@@ -35,7 +35,8 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
     shuttle_for_terminal: list[ShuttleDepartureItem] = []
 
     for shuttle_index, shuttle_time in enumerate(timetable):
-        shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M")
+        shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M")\
+            .replace(tzinfo=korea_standard_time)
         shuttle_heading = shuttle_time["type"]
         if shuttle_stop == "Dormitory" and shuttle_time["startStop"] == "Dormitory":
             timedelta_minute = -5

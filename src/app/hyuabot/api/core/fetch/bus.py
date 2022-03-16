@@ -9,6 +9,7 @@ from starlette.responses import JSONResponse
 
 from app.hyuabot.api.core.config import AppSettings
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value, set_redis_value
+from app.hyuabot.api.core.date import korea_standard_time
 
 fetch_bus_router = APIRouter(prefix="/bus")
 
@@ -72,7 +73,7 @@ async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
             await set_redis_value(redis_connection, f"{stop_id}_{route_id}_arrival",
                                   json.dumps(arrival_list, ensure_ascii=False).encode("utf-8"))
             await set_redis_value(redis_connection, f"{stop_id}_{route_id}_update_time",
-                                  datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+                                  datetime.now(tz=korea_standard_time).strftime("%m/%d/%Y, %H:%M:%S"))
             await redis_connection.close()
 
             return arrival_list
