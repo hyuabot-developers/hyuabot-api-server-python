@@ -10,7 +10,7 @@ from app.hyuabot.api.initialize_data import load_shuttle_timetable, store_shuttl
 
 @pytest.mark.asyncio
 async def test_store_shuttle_timetable():
-    term_keys = ["semester", "vacation", "vacation_session"]
+    term_keys = ["semester", "vacation"]
     day_keys = ["weekdays", "weekends"]
 
     await load_shuttle_timetable()

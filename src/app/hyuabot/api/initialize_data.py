@@ -13,7 +13,7 @@ from app.hyuabot.api.core.fetch.reading_room import fetch_reading_room_api
 async def load_shuttle_timetable():
     redis_connection = await get_redis_connection("shuttle")
 
-    term_keys = ["semester", "vacation", "vacation_session"]
+    term_keys = ["semester", "vacation"]
     day_keys = ["week", "weekend"]
     day_dict = {"week": "weekdays", "weekend": "weekends"}
 
@@ -34,10 +34,11 @@ async def store_shuttle_timetable_redis(redis_connection: Redis, url: str, key: 
         async with session.get(url) as response:
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
             timetable: list[dict] = []
-            for shuttle_type, shuttle_time in reader:
+            for shuttle_type, shuttle_time, shuttle_start_stop in reader:
                 timetable.append({
                     "type": shuttle_type,
                     "time": shuttle_time,
+                    "startStop": shuttle_start_stop,
                 })
             await set_redis_value(redis_connection, key,
                                   json.dumps(timetable, ensure_ascii=False).encode("utf-8"))

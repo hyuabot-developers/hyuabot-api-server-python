@@ -38,7 +38,6 @@ async def get_shuttle_term(date: datetime = datetime.now()) -> Tuple[bool, str, 
         for term in date_json[term_key]:
             start_date = datetime.strptime(term["start"], "%m/%d").replace(year=date.year)
             end_date = datetime.strptime(term["end"], "%m/%d").replace(year=date.year)
-
             if start_date >= end_date:
                 if date >= start_date:
                     start_date = start_date.replace(year=date.year)
@@ -46,9 +45,11 @@ async def get_shuttle_term(date: datetime = datetime.now()) -> Tuple[bool, str, 
                 elif date <= end_date:
                     start_date = start_date.replace(year=date.year - 1)
                     end_date = end_date.replace(year=date.year)
-
             if start_date <= date <= end_date:
                 current_term = term_key
+                break
+        if current_term:
+            break
 
     if date.weekday() >= 5 or date.strftime("%Y-%m-%d") in holidays.KR():
         weekday_key = "weekends"
