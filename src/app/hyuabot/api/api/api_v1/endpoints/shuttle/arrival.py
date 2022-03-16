@@ -43,18 +43,18 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
             if get_all or compare_timetable(shuttle_departure_time, now):
                 if shuttle_heading == "DH":
                     shuttle_for_station.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                 elif shuttle_heading == "DY":
                     shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                 elif shuttle_heading == "C":
                     shuttle_for_station.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                     shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
         elif shuttle_stop == "Shuttlecock_O":
             timedelta_minute = 0
@@ -62,18 +62,18 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
             if get_all or compare_timetable(shuttle_departure_time, now):
                 if shuttle_heading == "DH":
                     shuttle_for_station.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                 elif shuttle_heading == "DY":
                     shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                 elif shuttle_heading == "C":
                     shuttle_for_station.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                     shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
         elif shuttle_stop == "Station":
             timedelta_minute = 10
@@ -81,14 +81,14 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
             if get_all or compare_timetable(shuttle_departure_time, now):
                 if shuttle_heading == "DH":
                     shuttle_for_station.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                 elif shuttle_heading == "C":
                     shuttle_for_station.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
                     shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
         elif shuttle_stop == "Terminal":
             if shuttle_heading == "DY":
@@ -96,14 +96,14 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
                 shuttle_departure_time += timedelta(minutes=timedelta_minute)
                 if get_all or compare_timetable(shuttle_departure_time, now):
                     shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
             elif shuttle_heading == "C":
                 timedelta_minute = 15
                 shuttle_departure_time += timedelta(minutes=timedelta_minute)
                 if get_all or compare_timetable(shuttle_departure_time, now):
                     shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                     ))
         elif shuttle_stop == "Shuttlecock_I" or shuttle_time["startStop"] == "Dormitory":
             if shuttle_heading == "DH" or shuttle_heading == "DY":
@@ -113,8 +113,9 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
             shuttle_departure_time += timedelta(minutes=timedelta_minute)
             if get_all or compare_timetable(shuttle_departure_time, now):
                 shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"]
-                    ))
+                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
+                    )
+                )
     await redis_connection.close()
     return shuttle_for_station, shuttle_for_terminal
 
@@ -138,7 +139,8 @@ async def fetch_arrival_list():
         results.append(ShuttleDepartureByStop(
             stopName=shuttle_stop_name,
             busForStation=shuttle_for_station,
-            busForTerminal=shuttle_for_terminal, ))
+            busForTerminal=shuttle_for_terminal)
+        )
     return ShuttleDeparture(
         arrivalList=results,
     )
@@ -165,7 +167,7 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str):
 
 
 @arrival_router.get("/{shuttle_stop}/timetable", status_code=200, response_model=ShuttleDepartureByStop)
-async def fetch_arrival_list_by_stop(shuttle_stop: str):
+async def fetch_timetable_list_by_stop(shuttle_stop: str):
     if shuttle_stop not in shuttle_stop_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 정류장입니다."})
 
