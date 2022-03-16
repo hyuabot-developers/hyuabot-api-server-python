@@ -111,7 +111,7 @@ async def test_shuttle_arrival_list():
 
 
 @pytest.mark.asyncio
-async def test_shuttle_arrival_list():
+async def test_shuttle_timetable_list():
     app_settings = AppSettings()
     async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
         for shuttle_stop in shuttle_stop_type:
