@@ -5,7 +5,7 @@ import json
 from fastapi import APIRouter, HTTPException
 
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
-from app.hyuabot.api.core.date import get_shuttle_term
+from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.core.fetch.subway import get_subway_realtime_information
 from app.hyuabot.api.schemas.subway import \
     SubwayDepartureResponse, SubwayDepartureByLine, SubwayTimetableList
@@ -25,7 +25,7 @@ async def fetch_subway_timetable(line_id: str) -> dict:
 
 
 async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> list[dict]:
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=korea_standard_time)
 
     redis_connection = await get_redis_connection("subway")
     json_string = await get_redis_value(redis_connection, f"subway_{line_id}_{day}_{heading}")
@@ -34,7 +34,7 @@ async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> 
 
     for item in timetable:
         item_time = datetime.datetime.strptime(item["departureTime"], "%H:%M:%S").replace(
-            year=now.year, month=now.month, day=now.day,
+            year=now.year, month=now.month, day=now.day, tzinfo=korea_standard_time
         )
         if item_time.hour < 4:
             item_time += datetime.timedelta(days=1)
@@ -46,7 +46,7 @@ async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> 
 
 
 async def fetch_subway_realtime_redis(station_name: str, line_id: str) -> tuple[str, dict]:
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=korea_standard_time)
     redis_connection = await get_redis_connection("subway")
     update_time = await get_redis_value(redis_connection, f"subway_{station_name}_{line_id}_update_time")
     arrival_list_string = \
@@ -55,7 +55,7 @@ async def fetch_subway_realtime_redis(station_name: str, line_id: str) -> tuple[
     arrival_list = {}
     if update_time is not None:
         updated_before = (now - datetime.datetime.strptime(
-            update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S")
+            update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S").replace(tzinfo=korea_standard_time)
                           ).seconds
         if updated_before < 60:
             arrival_list = json.loads(arrival_list_string.decode("utf-8"))

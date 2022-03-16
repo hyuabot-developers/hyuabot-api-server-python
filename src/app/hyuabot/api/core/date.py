@@ -1,14 +1,16 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Tuple
 
 import holidays
 from korean_lunar_calendar import KoreanLunarCalendar
 
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
+korea_standard_time = timezone(timedelta(hours=9))
 
 
-async def get_shuttle_term(date: datetime = datetime.now()) -> Tuple[bool, str, str]:
+async def get_shuttle_term(date: datetime = datetime.now(tz=korea_standard_time)) \
+        -> Tuple[bool, str, str]:
     """
     오늘 날짜에 대한 셔틀 운행 타입을 반환합니다.
     :param date: 날짜
@@ -36,8 +38,10 @@ async def get_shuttle_term(date: datetime = datetime.now()) -> Tuple[bool, str, 
     current_term = ""
     for term_key in term_keys:
         for term in date_json[term_key]:
-            start_date = datetime.strptime(term["start"], "%m/%d").replace(year=date.year)
-            end_date = datetime.strptime(term["end"], "%m/%d").replace(year=date.year)
+            start_date = datetime.strptime(term["start"], "%m/%d")\
+                .replace(year=date.year, tzinfo=korea_standard_time)
+            end_date = datetime.strptime(term["end"], "%m/%d")\
+                .replace(year=date.year, tzinfo=korea_standard_time)
             if start_date >= end_date:
                 if date >= start_date:
                     start_date = start_date.replace(year=date.year)

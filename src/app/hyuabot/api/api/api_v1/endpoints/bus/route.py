@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_dict, timetable_limit, bus_stop_dict
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
+from app.hyuabot.api.core.date import korea_standard_time
 from app.hyuabot.api.core.fetch.bus import fetch_bus_timetable_redis, fetch_bus_realtime
 from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse
 
@@ -14,7 +15,7 @@ arrival_router = APIRouter(prefix="/arrival")
 
 
 async def fetch_bus_realtime_redis(bus_line_id: str, bus_stop_id: str) -> list:
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=korea_standard_time)
     redis_connection = await get_redis_connection("bus")
     update_time = await get_redis_value(redis_connection, f"{bus_stop_id}_{bus_line_id}_update_time")
     arrival_list_string = await get_redis_value(redis_connection, f"{bus_stop_id}_{bus_line_id}_arrival")
@@ -22,7 +23,7 @@ async def fetch_bus_realtime_redis(bus_line_id: str, bus_stop_id: str) -> list:
     arrival_list: list[dict] = []
     if update_time is not None:
         updated_before = (now - datetime.datetime.strptime(
-            update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S")
+            update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S").replace(tzinfo=korea_standard_time)
         ).seconds
         if updated_before < 60:
             arrival_list = json.loads(arrival_list_string.decode("utf-8"))

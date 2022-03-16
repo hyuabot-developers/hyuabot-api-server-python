@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.core.config import AppSettings
 from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
+from app.hyuabot.api.core.date import korea_standard_time
 
 status_code_dict = {0: "진입", 1: "도착", 2: "출발", 3: "전역출발", 4: "전역진입", 5: "전역도착", 99: "운행중"}
 fetch_subway_router = APIRouter(prefix="/subway")
@@ -57,6 +58,7 @@ async def get_subway_realtime_information(station_name: str) -> dict:
                                       json.dumps(
                                           arrival_list[line_id], ensure_ascii=False).encode("utf-8"))
                 await set_redis_value(redis_connection, f"subway_{station_name}_{line_id}_update_time",
-                                      datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+                                      datetime.now(tz=korea_standard_time)
+                                      .strftime("%m/%d/%Y, %H:%M:%S"))
             await redis_connection.close()
     return arrival_list
