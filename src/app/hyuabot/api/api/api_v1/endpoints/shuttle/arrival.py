@@ -114,8 +114,7 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
             if get_all or compare_timetable(shuttle_departure_time, now):
                 shuttle_for_terminal.append(ShuttleDepartureItem(
                         time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
-                    )
-                )
+                ))
     await redis_connection.close()
     return shuttle_for_station, shuttle_for_terminal
 
@@ -139,8 +138,8 @@ async def fetch_arrival_list():
         results.append(ShuttleDepartureByStop(
             stopName=shuttle_stop_name,
             busForStation=shuttle_for_station,
-            busForTerminal=shuttle_for_terminal)
-        )
+            busForTerminal=shuttle_for_terminal,
+        ))
     return ShuttleDeparture(
         arrivalList=results,
     )
