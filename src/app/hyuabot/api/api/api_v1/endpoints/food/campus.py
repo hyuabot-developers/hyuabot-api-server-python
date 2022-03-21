@@ -26,7 +26,8 @@ restaurant_id_dict = {
 restaurant_menu_campus_router = APIRouter(prefix="/campus")
 
 
-@restaurant_menu_campus_router.get("/{campus_name}", status_code=200, response_model=CampusItem)
+@restaurant_menu_campus_router.get("/{campus_name}", status_code=200,
+                                   response_model=CampusItem, tags=["Restaurant Menu By campus"])
 async def fetch_restaurant_by_campus(campus_name: str):
     redis_connection = await get_redis_connection("restaurant")
     restaurant_list = []

@@ -9,7 +9,8 @@ from app.hyuabot.api.schemas.reading_room import ReadingRoomItem
 reading_room_router = APIRouter(prefix="/library")
 
 
-@reading_room_router.get("/{campus_name}", status_code=200, response_model=list[ReadingRoomItem])
+@reading_room_router.get("/{campus_name}", status_code=200,
+                         response_model=list[ReadingRoomItem], tags=["Reading room seat by campus"])
 async def fetch_reading_room_by_campus(campus_name: str):
     redis_connection = await get_redis_connection("reading_room")
     key = f"{campus_name.lower()}_reading_room"
