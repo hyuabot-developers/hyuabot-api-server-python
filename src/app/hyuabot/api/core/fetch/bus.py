@@ -24,59 +24,58 @@ async def fetch_bus_realtime_in_a_row() -> JSONResponse:
 
     tasks = []
     for line_name, (line_id, stop_id) in bus_route_dict.items():
-        tasks.append(fetch_bus_realtime(line_id, stop_id))
+        tasks.append(fetch_bus_realtime(stop_id, line_id))
     await asyncio.gather(*tasks)
     return JSONResponse({"message": "Fetch bus data success"}, status_code=200)
 
 
 async def fetch_bus_realtime(stop_id: str, route_id: str) -> list[dict]:
     bus_auth_key: str = AppSettings().BUS_API_KEY
-    url = "http://openapi.gbis.go.kr/ws/rest/busarrivalservice"
-    params = {"serviceKey": bus_auth_key, "stationId": stop_id, "routeId": route_id}
+    url = f'http://apis.data.go.kr/6410000/busarrivalservice/getBusArrivalItem?' \
+          f'serviceKey={bus_auth_key}&stationId={stop_id}&routeId={route_id}'
 
     timeout = aiohttp.ClientTimeout(total=3.0)
     arrival_list = []
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        async with session.get(url, params=params) as response:
+        async with session.get(url) as response:
             soup = BeautifulSoup(await response.text(), "lxml")
             arrival_info_list = soup.find("response").find("msgbody")
-            if arrival_info_list is None:
-                return []
-            arrival_info_list = arrival_info_list.find("busarrivalitem")
-            location, low_plate, predict_time, remained_seat = \
-                arrival_info_list.find("locationno1").text, \
-                arrival_info_list.find("lowplate1").text, \
-                arrival_info_list.find("predicttime1").text, \
-                arrival_info_list.find("remainseatcnt1").text
-            arrival_list.append({
-                "location": location,
-                "lowPlate": low_plate,
-                "remainedTime": predict_time,
-                "remainedSeat": remained_seat,
-            })
-
-            if arrival_info_list.find("locationno2") and \
-                    arrival_info_list.find("locationno2").text and \
-                    arrival_info_list.find("predicttime2").text:
+            if arrival_info_list is not None:
+                arrival_info_list = arrival_info_list.find("busarrivalitem")
                 location, low_plate, predict_time, remained_seat = \
-                    arrival_info_list.find("locationno2").text, \
-                    arrival_info_list.find("lowplate2").text, \
-                    arrival_info_list.find("predicttime2").text, \
-                    arrival_info_list.find("remainseatcnt2").text
+                    arrival_info_list.find("locationno1").text, \
+                    arrival_info_list.find("lowplate1").text, \
+                    arrival_info_list.find("predicttime1").text, \
+                    arrival_info_list.find("remainseatcnt1").text
                 arrival_list.append({
                     "location": location,
                     "lowPlate": low_plate,
                     "remainedTime": predict_time,
                     "remainedSeat": remained_seat,
                 })
-            redis_connection = await get_redis_connection("bus")
-            await set_redis_value(redis_connection, f"{stop_id}_{route_id}_arrival",
-                                  json.dumps(arrival_list, ensure_ascii=False).encode("utf-8"))
-            await set_redis_value(redis_connection, f"{stop_id}_{route_id}_update_time",
-                                  datetime.now(tz=korea_standard_time).strftime("%m/%d/%Y, %H:%M:%S"))
-            await redis_connection.close()
 
-            return arrival_list
+                if arrival_info_list.find("locationno2") and \
+                        arrival_info_list.find("locationno2").text and \
+                        arrival_info_list.find("predicttime2").text:
+                    location, low_plate, predict_time, remained_seat = \
+                        arrival_info_list.find("locationno2").text, \
+                        arrival_info_list.find("lowplate2").text, \
+                        arrival_info_list.find("predicttime2").text, \
+                        arrival_info_list.find("remainseatcnt2").text
+                    arrival_list.append({
+                        "location": location,
+                        "lowPlate": low_plate,
+                        "remainedTime": predict_time,
+                        "remainedSeat": remained_seat,
+                    })
+    redis_connection = await get_redis_connection("bus")
+    await set_redis_value(redis_connection, f"{stop_id}_{route_id}_arrival",
+                          json.dumps(arrival_list, ensure_ascii=False).encode("utf-8"))
+    await set_redis_value(redis_connection, f"{stop_id}_{route_id}_update_time",
+                          datetime.now(tz=korea_standard_time).strftime("%m/%d/%Y, %H:%M:%S"))
+    await redis_connection.close()
+
+    return arrival_list
 
 
 async def fetch_bus_timetable_redis(route_id: str, day_key: str) -> list:
