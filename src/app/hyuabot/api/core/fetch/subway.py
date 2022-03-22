@@ -32,33 +32,35 @@ async def get_subway_realtime_information(station_name: str) -> dict:
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(url) as response:
             response_json = await response.json()
-            realtime_arrival_list = response_json["realtimeArrivalList"]
-            for realtime_arrival_item in realtime_arrival_list:
-                line_id = realtime_arrival_item["subwayId"]
-                up_down = realtime_arrival_item["updnLine"]
-                terminal_station = realtime_arrival_item["bstatnNm"]
-                current_station = realtime_arrival_item["arvlMsg3"]
-                status_code = realtime_arrival_item["arvlCd"]
+            if "realtimeArrivalList" in response_json.keys():
+                realtime_arrival_list = response_json["realtimeArrivalList"]
+                for realtime_arrival_item in realtime_arrival_list:
+                    line_id = realtime_arrival_item["subwayId"]
+                    up_down = realtime_arrival_item["updnLine"]
+                    terminal_station = realtime_arrival_item["bstatnNm"]
+                    current_station = realtime_arrival_item["arvlMsg3"]
+                    status_code = realtime_arrival_item["arvlCd"]
 
-                if line_id not in arrival_list.keys():
-                    arrival_list[line_id] = {"up": [], "down": []}
-                if up_down == "상행" or up_down == "내선":
-                    up_down_key = "up"
-                elif up_down == "하행" or up_down == "외선":
-                    up_down_key = "down"
-                arrival_list[line_id][up_down_key].append({
-                    "terminalStation": terminal_station,
-                    "currentStation": current_station,
-                    "statusCode": status_code_dict[int(status_code)],
-                })
+                    if line_id not in arrival_list.keys():
+                        arrival_list[line_id] = {"up": [], "down": []}
+                    if up_down == "상행" or up_down == "내선":
+                        up_down_key = "up"
+                    elif up_down == "하행" or up_down == "외선":
+                        up_down_key = "down"
+                    arrival_list[line_id][up_down_key].append({
+                        "terminalStation": terminal_station,
+                        "currentStation": current_station,
+                        "statusCode": status_code_dict[int(status_code)],
+                    })
 
-            redis_connection = await get_redis_connection("subway")
-            for line_id in arrival_list.keys():
-                await set_redis_value(redis_connection, f"subway_{station_name}_{line_id}_arrival",
-                                      json.dumps(
-                                          arrival_list[line_id], ensure_ascii=False).encode("utf-8"))
-                await set_redis_value(redis_connection, f"subway_{station_name}_{line_id}_update_time",
-                                      datetime.now(tz=korea_standard_time)
-                                      .strftime("%m/%d/%Y, %H:%M:%S"))
-            await redis_connection.close()
+                redis_connection = await get_redis_connection("subway")
+                for line_id in arrival_list.keys():
+                    await set_redis_value(redis_connection, f"subway_{station_name}_{line_id}_arrival",
+                                          json.dumps(
+                                              arrival_list[line_id], ensure_ascii=False).encode("utf-8"))
+                    await set_redis_value(redis_connection,
+                                          f"subway_{station_name}_{line_id}_update_time",
+                                          datetime.now(tz=korea_standard_time)
+                                          .strftime("%m/%d/%Y, %H:%M:%S"))
+                await redis_connection.close()
     return arrival_list
