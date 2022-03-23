@@ -13,7 +13,7 @@ fetch_restaurant_menu_router = APIRouter(prefix="/food")
 
 
 @fetch_restaurant_menu_router.get("", status_code=200)
-async def fetch_reading_room() -> JSONResponse:
+async def fetch_restaurant_menu() -> JSONResponse:
     restaurant_id_dict = {
         "student_seoul": "1",
         "life_science_seoul": "2",

@@ -7,7 +7,10 @@ from aioredis import Redis
 
 # 초기 서버 시작 시 셔틀 버스 정보 redis 저장
 from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
-from app.hyuabot.api.core.fetch.reading_room import fetch_reading_room_api
+from app.hyuabot.api.core.fetch.bus import fetch_bus_realtime_in_a_row
+from app.hyuabot.api.core.fetch.food import fetch_restaurant_menu
+from app.hyuabot.api.core.fetch.reading_room import fetch_reading_room_api, fetch_reading_room
+from app.hyuabot.api.core.fetch.subway import fetch_subway_realtime_information
 
 
 async def load_shuttle_timetable():
@@ -123,12 +126,16 @@ async def store_subway_timetable_redis(redis_connection: Redis, url: str, key: s
 
 
 async def initialize_data():
-    tasks = [
+    tasks = {
         load_shuttle_timetable(),
         store_shuttle_date_redis(),
         load_bus_timetable(),
         load_subway_timetable(),
         fetch_reading_room_api("seoul", 1),
         fetch_reading_room_api("erica", 2),
-    ]
+        fetch_bus_realtime_in_a_row(),
+        fetch_restaurant_menu(),
+        fetch_reading_room(),
+        fetch_subway_realtime_information(),
+    }
     await asyncio.gather(*tasks)

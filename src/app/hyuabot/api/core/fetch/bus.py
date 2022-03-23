@@ -29,11 +29,14 @@ async def fetch_bus_realtime_in_a_row() -> JSONResponse:
     return JSONResponse({"message": "Fetch bus data success"}, status_code=200)
 
 
-async def fetch_bus_realtime(stop_id: str, route_id: str, bus_auth_key: str | None) -> list[dict]:
-    if bus_auth_key:
-        bus_auth_key: str = AppSettings().BUS_API_KEY
-    url = f'http://apis.data.go.kr/6410000/busarrivalservice/getBusArrivalItem?' \
-          f'serviceKey={bus_auth_key}&stationId={stop_id}&routeId={route_id}'
+async def fetch_bus_realtime(stop_id: str, route_id: str, bus_auth_key: str = None) -> list[dict]:
+    if bus_auth_key is None:
+        bus_auth_key: str = "1234567890"
+        url = f'http://openapi.gbis.go.kr/ws/rest/busarrivalservice?' \
+              f'serviceKey={bus_auth_key}&stationId={stop_id}&routeId={route_id}'
+    else:
+        url = f'http://apis.data.go.kr/6410000/busarrivalservice/getBusArrivalItem?' \
+              f'serviceKey={bus_auth_key}&stationId={stop_id}&routeId={route_id}'
     timeout = aiohttp.ClientTimeout(total=3.0)
     arrival_list = []
     try:
@@ -76,11 +79,13 @@ async def fetch_bus_realtime(stop_id: str, route_id: str, bus_auth_key: str | No
                               datetime.now(tz=korea_standard_time).strftime("%m/%d/%Y, %H:%M:%S"))
         await redis_connection.close()
     except asyncio.exceptions.TimeoutError:
-        arrival_list = await fetch_bus_realtime(stop_id, route_id, "1234567890")
-        print("TimeoutError")
+        if bus_auth_key != "1234567890":
+            arrival_list = await fetch_bus_realtime(stop_id, route_id, "1234567890")
+        print("TimeoutError", url)
     except AttributeError:
-        arrival_list = await fetch_bus_realtime(stop_id, route_id, "1234567890")
-        print("AttributeError")
+        if bus_auth_key != "1234567890":
+            arrival_list = await fetch_bus_realtime(stop_id, route_id, "1234567890")
+        print("AttributeError", url)
     return arrival_list
 
 
