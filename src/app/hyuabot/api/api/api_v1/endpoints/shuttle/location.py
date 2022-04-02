@@ -17,7 +17,7 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
     if shuttle_type not in shuttle_line_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 종류입니다."})
 
-    is_working, current_term, weekdays_keys = await get_shuttle_term()
+    is_working, current_term, weekdays_keys, query_time = await get_shuttle_term()
     if not is_working:
         return JSONResponse(content={
             "message": "당일은 셔틀을 운행하지 않습니다.",

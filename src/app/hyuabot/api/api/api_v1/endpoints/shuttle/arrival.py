@@ -122,7 +122,7 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
 
 @arrival_router.get("", status_code=200, response_model=ShuttleDeparture)
 async def fetch_arrival_list():
-    is_working, current_term, weekdays_keys = await get_shuttle_term()
+    is_working, current_term, weekdays_keys, query_time = await get_shuttle_term()
     if not is_working:
         return JSONResponse(content={
             "message": "당일은 셔틀을 운행하지 않습니다.",
@@ -142,6 +142,7 @@ async def fetch_arrival_list():
             busForTerminal=shuttle_for_terminal,
         ))
     return ShuttleDeparture(
+        queryTime=query_time,
         arrivalList=results,
     )
 
@@ -151,7 +152,7 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str):
     if shuttle_stop not in shuttle_stop_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 정류장입니다."})
 
-    is_working, current_term, weekdays_keys = await get_shuttle_term()
+    is_working, current_term, weekdays_keys, query_time = await get_shuttle_term()
     if not is_working:
         return JSONResponse(content={
             "message": "당일은 셔틀을 운행하지 않습니다.",
@@ -160,6 +161,7 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str):
     shuttle_for_station, shuttle_for_terminal = \
         await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys)
     return ShuttleDepartureByStop(
+        queryTime=query_time,
         stopName=shuttle_stop_dict[shuttle_stop],
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
@@ -171,7 +173,7 @@ async def fetch_timetable_list_by_stop(shuttle_stop: str):
     if shuttle_stop not in shuttle_stop_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 정류장입니다."})
 
-    is_working, current_term, weekdays_keys = await get_shuttle_term()
+    is_working, current_term, weekdays_keys, query_time = await get_shuttle_term()
     if not is_working:
         return JSONResponse(content={
             "message": "당일은 셔틀을 운행하지 않습니다.",
@@ -180,6 +182,7 @@ async def fetch_timetable_list_by_stop(shuttle_stop: str):
     shuttle_for_station, shuttle_for_terminal = \
         await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys,  get_all=True)
     return ShuttleDepartureByStop(
+        queryTime=query_time,
         stopName=shuttle_stop_dict[shuttle_stop],
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,

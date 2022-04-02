@@ -15,6 +15,7 @@ class ShuttleDepartureItem(BaseModel):
 
 
 class ShuttleDepartureByStop(BaseModel):
+    query_time: str = Field(alias="queryTime", title="요청 시간", description="예시:'2020-01-01T09:00:00'")
     stop_name: str = Field(alias="stopName", title="정류장 이름", description="예시: '셔틀콕'")
     for_station: list[ShuttleDepartureItem] = Field(alias="busForStation", title="한대앞 방면 출발 시간",
                                                     description="예시: [{'time': '09:00', 'type': 'DH'}]")
@@ -23,6 +24,7 @@ class ShuttleDepartureByStop(BaseModel):
 
 
 class ShuttleDeparture(BaseModel):
+    query_time: str = Field(alias="queryTime", title="요청 시간", description="예시:'2020-01-01T09:00:00'")
     arrival_list: list[ShuttleDepartureByStop] = Field(alias="arrivalList", title="정류장 출발 시간")
 
 

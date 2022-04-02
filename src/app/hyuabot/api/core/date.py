@@ -10,7 +10,7 @@ korea_standard_time = timezone(timedelta(hours=9))
 
 
 async def get_shuttle_term(date: datetime = datetime.now(tz=korea_standard_time)) \
-        -> Tuple[bool, str, str]:
+        -> Tuple[bool, str, str, str]:
     """
     오늘 날짜에 대한 셔틀 운행 타입을 반환합니다.
     :param date: 날짜
@@ -60,4 +60,4 @@ async def get_shuttle_term(date: datetime = datetime.now(tz=korea_standard_time)
     else:
         weekday_key = "weekdays"
     await redis_connection.close()
-    return is_working, current_term, weekday_key
+    return is_working, current_term, weekday_key, date.strftime("%Y-%m-%d %H:%M:%S")
