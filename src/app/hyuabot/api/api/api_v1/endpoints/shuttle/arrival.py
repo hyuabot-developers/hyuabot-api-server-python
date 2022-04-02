@@ -161,7 +161,6 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str):
     shuttle_for_station, shuttle_for_terminal = \
         await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys)
     return ShuttleDepartureByStop(
-        queryTime=query_time,
         stopName=shuttle_stop_dict[shuttle_stop],
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
@@ -182,7 +181,6 @@ async def fetch_timetable_list_by_stop(shuttle_stop: str):
     shuttle_for_station, shuttle_for_terminal = \
         await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys,  get_all=True)
     return ShuttleDepartureByStop(
-        queryTime=query_time,
         stopName=shuttle_stop_dict[shuttle_stop],
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
