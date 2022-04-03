@@ -14,7 +14,7 @@ arrival_router = APIRouter(prefix="/arrival")
 
 
 async def fetch_subway_timetable(line_id: str) -> dict:
-    _, _, weekday_key = await get_shuttle_term()
+    _, _, weekday_key, _ = await get_shuttle_term()
 
     tasks = [
         fetch_subway_timetable_redis(line_id, weekday_key, "up"),
