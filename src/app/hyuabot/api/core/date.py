@@ -9,8 +9,7 @@ from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 korea_standard_time = timezone(timedelta(hours=9))
 
 
-async def get_shuttle_term(date: datetime = datetime.now(tz=korea_standard_time)) \
-        -> Tuple[bool, str, str, str]:
+async def get_shuttle_term(date: datetime = None) -> Tuple[bool, str, str, str]:
     """
     오늘 날짜에 대한 셔틀 운행 타입을 반환합니다.
     :param date: 날짜
@@ -18,6 +17,8 @@ async def get_shuttle_term(date: datetime = datetime.now(tz=korea_standard_time)
     셔틀 운행 여부(True/False),
     셔틀 운행 타입(semester, vacation, vacation_session)
     """
+    if date is None:
+        date = datetime.now(tz=korea_standard_time)
     redis_connection = await get_redis_connection("shuttle")
     key = "shuttle_date"
     json_string: bytes = await get_redis_value(redis_connection, key)
