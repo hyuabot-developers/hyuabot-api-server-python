@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.core.config import AppSettings
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value, set_redis_value
 from app.hyuabot.api.core.date import korea_standard_time
 
@@ -31,7 +30,7 @@ async def fetch_bus_realtime_in_a_row() -> JSONResponse:
 
 async def fetch_bus_realtime(stop_id: str, route_id: str, bus_auth_key: str = None) -> list[dict]:
     if bus_auth_key is None:
-        bus_auth_key: str = "1234567890"
+        bus_auth_key = "1234567890"
         url = f'http://openapi.gbis.go.kr/ws/rest/busarrivalservice?' \
               f'serviceKey={bus_auth_key}&stationId={stop_id}&routeId={route_id}'
     else:

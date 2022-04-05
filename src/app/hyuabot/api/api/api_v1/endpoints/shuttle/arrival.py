@@ -192,7 +192,7 @@ async def fetch_timetable_list_by_stop(shuttle_stop: str):
 
 @arrival_router.get("/{shuttle_stop}/timetable/all", status_code=200,
                     response_model=ShuttleDepartureTimetable)
-async def fetch_timetable_list_by_stop(shuttle_stop: str):
+async def fetch_timetable_list_by_stop_all(shuttle_stop: str):
     if shuttle_stop not in shuttle_stop_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 정류장입니다."})
 
