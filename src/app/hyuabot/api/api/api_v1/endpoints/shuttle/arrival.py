@@ -134,10 +134,11 @@ async def fetch_arrival_list():
         tasks.append(fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys))
 
     results = []
-    for shuttle_stop_name, (shuttle_for_station, shuttle_for_terminal) \
-            in zip(shuttle_stop_dict.values(), await asyncio.gather(*tasks)):
+    for (shuttle_stop_id,shuttle_stop_name), (shuttle_for_station, shuttle_for_terminal) \
+            in zip(shuttle_stop_dict.items(), await asyncio.gather(*tasks)):
         results.append(ShuttleDepartureByStop(
             stopName=shuttle_stop_name,
+            stopCode=shuttle_stop_id,
             busForStation=shuttle_for_station,
             busForTerminal=shuttle_for_terminal,
         ))
@@ -162,6 +163,7 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str):
         await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys)
     return ShuttleDepartureByStop(
         stopName=shuttle_stop_dict[shuttle_stop],
+        stopCode=shuttle_stop,
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
     )
@@ -182,6 +184,7 @@ async def fetch_timetable_list_by_stop(shuttle_stop: str):
         await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys,  get_all=True)
     return ShuttleDepartureByStop(
         stopName=shuttle_stop_dict[shuttle_stop],
+        stopCode=shuttle_stop,
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
     )

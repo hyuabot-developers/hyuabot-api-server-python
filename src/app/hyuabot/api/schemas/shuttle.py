@@ -16,6 +16,7 @@ class ShuttleDepartureItem(BaseModel):
 
 class ShuttleDepartureByStop(BaseModel):
     stop_name: str = Field(alias="stopName", title="정류장 이름", description="예시: '셔틀콕'")
+    stop_code: str = Field(alias="stopCode", title="정류장 코드", description="예시: 'Shuttlecock_I'")
     for_station: list[ShuttleDepartureItem] = Field(alias="busForStation", title="한대앞 방면 출발 시간",
                                                     description="예시: [{'time': '09:00', 'type': 'DH'}]")
     for_terminal: list[ShuttleDepartureItem] = Field(alias="busForTerminal", title="예술인 방면 출발 시간",
