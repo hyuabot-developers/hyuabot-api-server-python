@@ -1,6 +1,7 @@
 __version__ = "1.0.0-alpha1"
 
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from app.hyuabot.api.api.api_v1 import API_V1_ROUTERS
 from app.hyuabot.api.core.config import AppSettings
@@ -10,6 +11,13 @@ from app.hyuabot.api.initialize_data import initialize_data
 
 def create_app(app_settings: AppSettings) -> FastAPI:
     app = FastAPI()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.add_event_handler("startup", _web_app_startup)
 
     app.extra["settings"] = app_settings
