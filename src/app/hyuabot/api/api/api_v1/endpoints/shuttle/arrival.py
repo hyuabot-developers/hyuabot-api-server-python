@@ -10,7 +10,7 @@ from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepartureItem, \
-    ShuttleDeparture
+    ShuttleDeparture, ShuttleDepartureTimetable, ShuttleTimetableOnly
 
 arrival_router = APIRouter(prefix="/arrival")
 shuttle_stop_dict = {"Dormitory": "기숙사", "Shuttlecock_O": "셔틀콕", "Station": "한대앞",
@@ -35,7 +35,7 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
     shuttle_for_terminal: list[ShuttleDepartureItem] = []
 
     for shuttle_index, shuttle_time in enumerate(timetable):
-        shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M")\
+        shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M") \
             .replace(tzinfo=korea_standard_time)
         shuttle_heading = shuttle_time["type"]
         if shuttle_stop == "Dormitory" and shuttle_time["startStop"] == "Dormitory":
@@ -114,7 +114,7 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
             shuttle_departure_time += timedelta(minutes=timedelta_minute)
             if get_all or compare_timetable(shuttle_departure_time, now):
                 shuttle_for_terminal.append(ShuttleDepartureItem(
-                        time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
+                    time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                 ))
     await redis_connection.close()
     return shuttle_for_station, shuttle_for_terminal
@@ -134,10 +134,11 @@ async def fetch_arrival_list():
         tasks.append(fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys))
 
     results = []
-    for shuttle_stop_name, (shuttle_for_station, shuttle_for_terminal) \
-            in zip(shuttle_stop_dict.values(), await asyncio.gather(*tasks)):
+    for (shuttle_stop_id, shuttle_stop_name), (shuttle_for_station, shuttle_for_terminal) \
+            in zip(shuttle_stop_dict.items(), await asyncio.gather(*tasks)):
         results.append(ShuttleDepartureByStop(
             stopName=shuttle_stop_name,
+            stopCode=shuttle_stop_id,
             busForStation=shuttle_for_station,
             busForTerminal=shuttle_for_terminal,
         ))
@@ -162,6 +163,7 @@ async def fetch_arrival_list_by_stop(shuttle_stop: str):
         await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys)
     return ShuttleDepartureByStop(
         stopName=shuttle_stop_dict[shuttle_stop],
+        stopCode=shuttle_stop,
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
     )
@@ -179,9 +181,35 @@ async def fetch_timetable_list_by_stop(shuttle_stop: str):
             "busForStation": [], "busForTerminal": [],
         })
     shuttle_for_station, shuttle_for_terminal = \
-        await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys,  get_all=True)
+        await fetch_timetable_by_stop(shuttle_stop, current_term, weekdays_keys, get_all=True)
     return ShuttleDepartureByStop(
         stopName=shuttle_stop_dict[shuttle_stop],
+        stopCode=shuttle_stop,
         busForStation=shuttle_for_station,
         busForTerminal=shuttle_for_terminal,
+    )
+
+
+@arrival_router.get("/{shuttle_stop}/timetable/all", status_code=200,
+                    response_model=ShuttleDepartureTimetable)
+async def fetch_timetable_list_by_stop_all(shuttle_stop: str):
+    if shuttle_stop not in shuttle_stop_type:
+        return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 정류장입니다."})
+
+    is_working, current_term, _, query_time = await get_shuttle_term()
+    shuttle_for_station_weekdays, shuttle_for_terminal_weekdays = \
+        await fetch_timetable_by_stop(shuttle_stop, current_term, "weekdays", get_all=True)
+    shuttle_for_station_weekends, shuttle_for_terminal_weekends = \
+        await fetch_timetable_by_stop(shuttle_stop, current_term, "weekends", get_all=True)
+    return ShuttleDepartureTimetable(
+        stopName=shuttle_stop_dict[shuttle_stop],
+        stopCode=shuttle_stop,
+        weekdays=ShuttleTimetableOnly(
+            busForStation=shuttle_for_station_weekdays,
+            busForTerminal=shuttle_for_terminal_weekdays,
+        ),
+        weekends=ShuttleTimetableOnly(
+            busForStation=shuttle_for_station_weekends,
+            busForTerminal=shuttle_for_terminal_weekends,
+        ),
     )
