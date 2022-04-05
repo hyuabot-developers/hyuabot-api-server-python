@@ -23,6 +23,20 @@ class ShuttleDepartureByStop(BaseModel):
                                                      description="예시: [{'time': '09:00', 'type': 'DY'}]")
 
 
+class ShuttleTimetableOnly(BaseModel):
+    for_station: list[ShuttleDepartureItem] = Field(alias="busForStation", title="한대앞 방면 출발 시간",
+                                                    description="예시: [{'time': '09:00', 'type': 'DH'}]")
+    for_terminal: list[ShuttleDepartureItem] = Field(alias="busForTerminal", title="예술인 방면 출발 시간",
+                                                     description="예시: [{'time': '09:00', 'type': 'DY'}]")
+
+
+class ShuttleDepartureTimetable(BaseModel):
+    stop_name: str = Field(alias="stopName", title="정류장 이름", description="예시: '셔틀콕'")
+    stop_code: str = Field(alias="stopCode", title="정류장 코드", description="예시: 'Shuttlecock_I'")
+    weekdays: ShuttleTimetableOnly = Field(alias="weekdays", title="주중 출발 시간")
+    weekends: ShuttleTimetableOnly = Field(alias="weekends", title="주말 출발 시간")
+
+
 class ShuttleDeparture(BaseModel):
     query_time: str = Field(alias="queryTime", title="요청 시간", description="예시:'2020-01-01T09:00:00'")
     arrival_list: list[ShuttleDepartureByStop] = Field(alias="arrivalList", title="정류장 출발 시간")
