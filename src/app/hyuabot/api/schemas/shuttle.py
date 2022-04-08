@@ -84,3 +84,9 @@ class ShuttleListItem(BaseModel):
 class ShuttleListResponse(BaseModel):
     message: str = Field(alias="message", title="메시지")
     shuttle_list: list[ShuttleListItem] = Field(alias="shuttleList", title="셔틀 목록")
+
+
+# 노선별 셔틀버스 시간표
+class ShuttleTimetable(BaseModel):
+    query_time: str = Field(alias="queryTime", title="요청 시간", description="예시:'2020-01-01T09:00:00'")
+    timetable_list: list[ShuttleDepartureTimetable] = Field(alias="timetableList", title="정류장 출발 시간")
