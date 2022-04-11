@@ -64,7 +64,7 @@ async def get_subway_realtime_information(station_name: str) -> dict:
                     arrival_list[line_id][up_down_key].append({
                         "terminalStation": terminal_station,
                         "currentStation": current_station,
-                        "remaiedTime": remained_time,
+                        "remainedTime": remained_time,
                         "statusCode": status_code_dict[int(status_code)],
                     })
 
