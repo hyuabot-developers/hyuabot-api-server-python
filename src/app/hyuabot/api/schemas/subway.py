@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 class SubwayRealtimeItem(BaseModel):
     terminal_station: str = Field(alias="terminalStation", title="행선지(역)", description="예시: '오이도'")
     current_station: str = Field(alias="currentStation", title="현재 위치(역)", description="예시: '반월'")
+    remained_time: float = Field(alias="remainedTime", title="남은 시간", description="예시: '1.5'")
     status: str = Field(alias="statusCode", title="상태", description="예시: '출발'")
 
 
