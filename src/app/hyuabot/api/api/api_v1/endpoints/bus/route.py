@@ -12,6 +12,9 @@ from app.hyuabot.api.core.fetch.bus import fetch_bus_timetable_redis, fetch_bus_
 from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse
 
 arrival_router = APIRouter(prefix="/arrival")
+start_stop_dict = {"10-1": "푸르지오6차후문", "707-1": "신안산대학교", "3102": "새솔고"}
+end_stop_dict = {"10-1": "상록수역", "707-1": "수원역", "3102": "강남역"}
+time_to_take_start_stop = {"10-1": 11, "707-1": 23, "3102": 28}
 
 
 async def fetch_bus_realtime_redis(bus_line_id: str, bus_stop_id: str) -> list:
@@ -54,6 +57,8 @@ async def fetch_bus_information():
     message = "정상 처리되었습니다."
     return BusStopInformationResponse(departureInfoList=[
         BusDepartureByLine(message=message, name="10-1",
+                           startStop=start_stop_dict["10-1"], terminalStop=end_stop_dict["10-1"],
+                           timeFromStartStop=time_to_take_start_stop["10-1"],
                            busStop=bus_stop_dict[bus_route_dict["10-1"][1]],
                            realtime=realtime_10_1,
                            timetable=BusTimetable(
@@ -62,6 +67,8 @@ async def fetch_bus_information():
                                sunday=sunday_timetable_10_1,
                            )),
         BusDepartureByLine(message=message, name="707-1",
+                           startStop=start_stop_dict["707-1"], terminalStop=end_stop_dict["707-1"],
+                           timeFromStartStop=time_to_take_start_stop["707-1"],
                            busStop=bus_stop_dict[bus_route_dict["707-1"][1]],
                            realtime=realtime_707_1,
                            timetable=BusTimetable(
@@ -70,6 +77,8 @@ async def fetch_bus_information():
                                sunday=sunday_timetable_707_1,
                            )),
         BusDepartureByLine(message=message, name="3102",
+                           startStop=start_stop_dict["3102"], terminalStop=end_stop_dict["3102"],
+                           timeFromStartStop=time_to_take_start_stop["3102"],
                            busStop=bus_stop_dict[bus_route_dict["3102"][1]],
                            realtime=realtime_3102,
                            timetable=BusTimetable(
@@ -99,5 +108,9 @@ async def fetch_bus_information_by_route(bus_line_id: str,
         weekdays=weekdays_timetable[:timetable_count if timetable_count else len(weekdays_timetable)],
         saturday=saturday_timetable[:timetable_count if timetable_count else len(saturday_timetable)],
         sunday=sunday_timetable[:timetable_count if timetable_count else len(sunday_timetable)])
-    return BusDepartureByLine(message=message, name=bus_line_id, busStop=bus_stop_dict[bus_stop_id],
+    return BusDepartureByLine(message=message, name=bus_line_id,
+                              startStop=start_stop_dict[bus_line_id],
+                              terminalStop=end_stop_dict[bus_line_id],
+                              timeFromStartStop=time_to_take_start_stop[bus_line_id],
+                              busStop=bus_stop_dict[bus_stop_id],
                               realtime=arrival_list, timetable=timetable)

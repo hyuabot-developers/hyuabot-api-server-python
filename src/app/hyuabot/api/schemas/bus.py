@@ -19,6 +19,9 @@ class BusTimetable(BaseModel):
 class BusDepartureByLine(BaseModel):
     message: str = Field(alias="message", title="메시지")
     name: str = Field(alias="name", title="노선명", description="예시: 3102")
+    start_stop: str = Field(alias="startStop", title="출발정류장", description="예시: 서울역")
+    terminal_stop: str = Field(alias="terminalStop", title="종점정류장", description="예시: 신림역")
+    time_from_start_stop: str = Field(alias="timeFromStartStop", title="출발정류장으로부터 시간")
     bus_stop: str = Field(alias="busStop", title="기준 정류장", description="예시: 한양대컨벤션센터")
     realtime: list[BusRealtimeItem] = Field(alias="realtime", title="실시간 도착 정보")
     timetable: BusTimetable = Field(alias="timetable", title="시점 출발 시간표")
