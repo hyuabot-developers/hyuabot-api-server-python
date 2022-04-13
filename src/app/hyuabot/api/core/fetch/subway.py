@@ -16,10 +16,11 @@ minute_to_arrival = {
     "달월": 21, "월곶": 23, "소래포구": 25, "인천논현": 27, "호구포": 29, "남동인더스파크": 31, "원인재": 33,
     "연수": 35, "송도": 38.5, "인하대": 41, "숭의": 42.5, "신포": 45, "인천": 46.5,
     "상록수": 2, "반월": 6, "대야미": 8.5, "수리산": 11.5, "산본": 13.5, "금정": 18,
-    "범계": 21.5, "평촌": 23.5, "인덕원": 26, "정부과천청사": 28, "과천": 30,
+    "범계": 21.5, "평촌": 23.5, "인덕원": 26, "정부과천청사": 28, "과천": 30, "대공원": 32, "경마공원": 34,
+    "선바위": 36, "남태령": 39, "사당": 41.5,
     "사리": 2, "야목": 7, "어천": 10, "오목천": 14, "고색": 17, "수원": 21, "매교": 23, "수원시청": 26,
     "매탄권선": 29, "망포": 31.5, "영통": 34, "청명": 36, "상갈": 39, "기흥": 41.5, "신갈": 44, "구성": 46.5,
-    "보정": 49, "죽전": 52, "오리": 55.5, "미금": 57.5, "정지": 60, "수내": 62.5, "서현": 64.5, "이매": 66.5
+    "보정": 49, "죽전": 52, "오리": 55.5, "미금": 57.5, "정자": 60, "수내": 62.5, "서현": 64.5, "이매": 66.5
 }
 fetch_subway_router = APIRouter(prefix="/subway")
 
@@ -50,7 +51,8 @@ async def get_subway_realtime_information(station_name: str) -> dict:
                     terminal_station = realtime_arrival_item["bstatnNm"]
                     current_station = realtime_arrival_item["arvlMsg3"]
                     status_code = realtime_arrival_item["arvlCd"]
-
+                    if "급행" in terminal_station:
+                        continue
                     if line_id not in arrival_list.keys():
                         arrival_list[line_id] = {"up": [], "down": []}
                     if up_down == "상행" or up_down == "내선":
