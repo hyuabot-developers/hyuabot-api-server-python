@@ -1,6 +1,6 @@
 import asyncio
 import json
-from datetime import datetime
+from collections import defaultdict
 
 import aiohttp
 from fastapi import APIRouter
@@ -8,76 +8,95 @@ from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.core.config import AppSettings
 from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
-from app.hyuabot.api.core.date import korea_standard_time
 
-status_code_dict = {0: "진입", 1: "도착", 2: "출발", 3: "전역출발", 4: "전역진입", 5: "전역도착", 99: "운행중"}
-minute_to_arrival = {
-    "한대앞": 0, "중앙": 2, "고잔": 4, "초지": 6.5, "안산": 9, "신길온천": 12.5, "정왕": 16, "오이도": 19,
-    "달월": 21, "월곶": 23, "소래포구": 25, "인천논현": 27, "호구포": 29, "남동인더스파크": 31, "원인재": 33,
-    "연수": 35, "송도": 38.5, "인하대": 41, "숭의": 42.5, "신포": 45, "인천": 46.5,
-    "상록수": 2, "반월": 6, "대야미": 8.5, "수리산": 11.5, "산본": 13.5, "금정": 18,
-    "범계": 21.5, "평촌": 23.5, "인덕원": 26, "정부과천청사": 28, "과천": 30, "대공원": 32, "경마공원": 34,
-    "선바위": 36, "남태령": 39, "사당": 41.5,
-    "사리": 2, "야목": 7, "어천": 10, "오목천": 14, "고색": 17, "수원": 21, "매교": 23, "수원시청": 26,
-    "매탄권선": 29, "망포": 31.5, "영통": 34, "청명": 36, "상갈": 39, "기흥": 41.5, "신갈": 44, "구성": 46.5,
-    "보정": 49, "죽전": 52, "오리": 55.5, "미금": 57.5, "정자": 60, "수내": 62.5, "서현": 64.5, "이매": 66.5
-}
+status_code_dict = {0: "진입", 1: "도착"}
+line_code_dict = {"2호선": 1002, "4호선": 1004, "수인분당선": 1075}
+minute_to_arrival = {'상계': 93.5, '노원': 91.5, '창동': 89.5, '쌍문': 87.0, '수유': 84.5, '미아': 82.5,
+                     '미아사거리': 80.0, '길음': 77.5, '성신여대입구': 75.0, '한성대입구': 73.0, '혜화': 71.0,
+                     '동대문': 68.5, '동대문역사문화공원': 67.0, '충무로': 64.5, '명동': 63.0, '회현': 61.5,
+                     '서울': 59.5, '숙대입구': 57.5, '삼각지': 55.5, '신용산': 54.0, '이촌': 51.5,
+                     '동작': 48.0, '총신대입구': 45.0, '사당': 43.0, '남태령': 40.5, '선바위': 37.5,
+                     '경마공원': 35.5, '대공원': 33.5, '과천': 31.5, '과천정부청사': 29.5, '인덕원': 26.0,
+                     '평촌': 23.5, '범계': 21.5, '금정': 18.0, '산본': 13.5, '수리산': 11.5, '대야미': 8.0,
+                     '반월': 5.5, '상록수': 2.0, '한대앞': 0.0, '중앙': 2.5, '고잔': 4.5, '초지': 7.0,
+                     '안산': 9.5, '신길온천': 13.0, '정왕': 16.0, '오이도': 19.0, '신포': 47.0, '숭의': 44.5,
+                     '인하대': 42.0, '송도': 39.5, '연수': 36.0, '원인재': 34.0, '남동인더스파크': 32.0,
+                     '호구포': 30.0, '인천논현': 28.0, '소래포구': 26.0, '월곶': 24.0, '달월': 21.5,
+                     '사리': 3.5, '야목': 8.5, '어천': 11.5, '오목천': 16.0, '고색': 18.5, '수원': 22.5,
+                     '매교': 25.0, '수원시청': 27.5, '매탄권선': 30.5, '망포': 33.0, '영통': 35.5,
+                     '청명': 37.5, '상갈': 41.0, '기흥': 43.5, '신갈': 46.0, '구성': 48.5, '보정': 51.0,
+                     '죽전': 54.0, '오리': 57.5, '미금': 59.5, '정자': 62.0, '수내': 64.5, '서현': 66.5,
+                     '이매': 68.5, '야탑': 71.0, '모란': 74.0, '태평': 76.0, '가천대': 78.0, '복정': 81.0,
+                     '수서': 85.0, '대모산입구': 89.0, '개포동': 90.5, '구룡': 92.5, '도곡': 94.0,
+                     '한티': 95.5, '선릉': 97.5, '선정릉': 99.5, '강남구청': 101.0, '로데오': 103.5,
+                     '서울숲': 105.5, '왕십리': 109.0, '청량리': 118.0}
 fetch_subway_router = APIRouter(prefix="/subway")
 
 
 @fetch_subway_router.get("", status_code=200)
 async def fetch_subway_realtime_information() -> JSONResponse:
     tasks = [
-        get_subway_realtime_information("한양대"), get_subway_realtime_information("한대앞"),
+        # get_subway_realtime_information("2호선"),
+        get_subway_realtime_information("4호선"),
+        get_subway_realtime_information("수인분당선"),
     ]
     await asyncio.gather(*tasks)
     return JSONResponse({"message": "Fetch subway data success"}, status_code=200)
 
 
-async def get_subway_realtime_information(station_name: str) -> dict:
+async def get_subway_realtime_information(line_name: str) -> None:
     app_settings = AppSettings()
     url = f"http://swopenapi.seoul.go.kr/api/subway/{app_settings.METRO_API_KEY}/json/" \
-          f"realtimeStationArrival/0/10/{station_name}"
+          f"realtimePosition/0/60/{line_name}"
     timeout = aiohttp.ClientTimeout(total=3.0)
-    arrival_list: dict[str, dict] = {}
     async with aiohttp.ClientSession(timeout=timeout) as session:
+        arrival_list = {"0": [], "1": []}
         async with session.get(url) as response:
             response_json = await response.json()
-            if "realtimeArrivalList" in response_json.keys():
-                realtime_arrival_list = response_json["realtimeArrivalList"]
-                for realtime_arrival_item in realtime_arrival_list:
-                    line_id = realtime_arrival_item["subwayId"]
-                    up_down = realtime_arrival_item["updnLine"]
-                    terminal_station = realtime_arrival_item["bstatnNm"]
-                    current_station = realtime_arrival_item["arvlMsg3"]
-                    status_code = realtime_arrival_item["arvlCd"]
-                    if "급행" in terminal_station:
-                        continue
-                    if line_id not in arrival_list.keys():
-                        arrival_list[line_id] = {"up": [], "down": []}
-                    if up_down == "상행" or up_down == "내선":
-                        up_down_key = "up"
-                    elif up_down == "하행" or up_down == "외선":
-                        up_down_key = "down"
-                    if current_station in minute_to_arrival.keys():
-                        remained_time = minute_to_arrival[current_station]
-                    else:
-                        remained_time = 0
-                    arrival_list[line_id][up_down_key].append({
+            if "realtimePositionList" in response_json.keys():
+                realtime_position_list = response_json["realtimePositionList"]
+                for realtime_position_item in realtime_position_list:
+                    current_station = realtime_position_item["statnNm"]
+                    train_number = realtime_position_item["trainNo"]
+                    update_time = realtime_position_item["recptnDt"]
+                    heading = realtime_position_item["updnLine"]
+                    terminal_station = realtime_position_item["statnTnm"]
+                    status_code = realtime_position_item["trainSttus"]
+                    is_express_train = realtime_position_item["directAt"]
+                    is_last_train = realtime_position_item["lstcarAt"]
+                    if line_name == "2호선":
+                        pass
+                    elif line_name == "4호선":
+                        if is_express_train == "1":
+                            continue
+                        elif heading == "0" and terminal_station not in ["당고개", "노원", "한성대입구"]:
+                            continue
+                        elif heading == "1" and terminal_station not in ["오이도", "안산"]:
+                            continue
+                    elif line_name == "수인분당선":
+                        if is_express_train == "1":
+                            continue
+                        elif heading == "0" and terminal_station not in ["왕십리", "죽전", "고색"]:
+                            continue
+                        elif heading == "1" and terminal_station not in ["오이도", "인천"]:
+                            continue
+                    arrival_list[heading].append({
+                        "trainNumber": train_number,
+                        "updateTime": update_time,
+                        "isLastTrain": is_last_train,
                         "terminalStation": terminal_station,
                         "currentStation": current_station,
-                        "remainedTime": remained_time,
-                        "statusCode": status_code_dict[int(status_code)],
+                        "statusCode": status_code_dict[int(status_code)] if
+                        int(status_code) in status_code_dict.keys() else "출발",
+                        "remainedTime": minute_to_arrival[current_station]
+                        if current_station in minute_to_arrival.keys() else 0,
                     })
 
                 redis_connection = await get_redis_connection("subway")
-                for line_id in arrival_list.keys():
-                    await set_redis_value(redis_connection, f"subway_{station_name}_{line_id}_arrival",
-                                          json.dumps(
-                                              arrival_list[line_id], ensure_ascii=False).encode("utf-8"))
-                    await set_redis_value(redis_connection,
-                                          f"subway_{station_name}_{line_id}_update_time",
-                                          datetime.now(tz=korea_standard_time)
-                                          .strftime("%m/%d/%Y, %H:%M:%S"))
+                arrival_list["0"] = sorted(arrival_list["0"], key=lambda x: x["remainedTime"])
+                arrival_list["1"] = sorted(arrival_list["1"], key=lambda x: x["remainedTime"])
+                await set_redis_value(redis_connection,
+                                      f"subway_{line_code_dict[line_name]}_position",
+                                      json.dumps(
+                                          arrival_list, ensure_ascii=False).encode("utf-8"))
                 await redis_connection.close()
-    return arrival_list
