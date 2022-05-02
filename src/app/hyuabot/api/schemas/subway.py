@@ -2,6 +2,9 @@ from pydantic import BaseModel, Field
 
 
 class SubwayRealtimeItem(BaseModel):
+    train_number: str = Field(alias="trainNumber", title="열차 번호")
+    update_time: str = Field(alias="updateTime", title="갱신 시간")
+    is_last_train: bool = Field(alias="isLastTrain", title="막차 여부")
     terminal_station: str = Field(alias="terminalStation", title="행선지(역)", description="예시: '오이도'")
     current_station: str = Field(alias="currentStation", title="현재 위치(역)", description="예시: '반월'")
     remained_time: float = Field(alias="remainedTime", title="남은 시간", description="예시: '1.5'")
@@ -25,7 +28,6 @@ class SubwayTimetableList(BaseModel):
 
 class SubwayDepartureByLine(BaseModel):
     line_name: str = Field(alias="lineName", title="노선명", description="예시: '4호선'")
-    update_time: str = Field(alias="updateTime", title="갱신 시간")
     realtime: SubwayRealtimeList = Field(alias="realtime", title="실시간 도착 정보")
     timetable: SubwayTimetableList = Field(alias="timetable", title="출발 시간표")
 

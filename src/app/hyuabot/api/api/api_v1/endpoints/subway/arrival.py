@@ -45,28 +45,14 @@ async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> 
     return timetable_after
 
 
-async def fetch_subway_realtime_redis(station_name: str, line_id: str) -> tuple[str, dict]:
-    now = datetime.datetime.now(tz=korea_standard_time)
+async def fetch_subway_realtime_redis(line_id: str) -> tuple[str, dict]:
     redis_connection = await get_redis_connection("subway")
-    update_time = await get_redis_value(redis_connection, f"subway_{station_name}_{line_id}_update_time")
     arrival_list_string = \
-        await get_redis_value(redis_connection, f"subway_{station_name}_{line_id}_arrival")
+        await get_redis_value(redis_connection, f"subway_{line_id}_position")
 
-    arrival_list = {}
-    if update_time is not None:
-        updated_before = (now - datetime.datetime.strptime(
-            update_time.decode("utf-8"), "%m/%d/%Y, %H:%M:%S").replace(tzinfo=korea_standard_time)
-                          ).seconds
-        if updated_before < 60:
-            arrival_list = json.loads(arrival_list_string.decode("utf-8"))
-        else:
-            update_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-            arrival_list = (await get_subway_realtime_information(station_name))[line_id]
-    if not arrival_list:
-        update_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-        arrival_list = (await get_subway_realtime_information(station_name))[line_id]
+    arrival_list = json.loads(arrival_list_string.decode("utf-8"))
     await redis_connection.close()
-    return update_time, arrival_list
+    return arrival_list
 
 
 @arrival_router.get("/{campus_name}", status_code=200, response_model=SubwayDepartureResponse)
@@ -80,35 +66,31 @@ async def fetch_subway_information(campus_name: str):
 
     tasks = []
     for station_name, line_id in subway_dict[campus_name]:
-        tasks.append(fetch_subway_realtime_redis(station_name, line_id))
+        tasks.append(fetch_subway_realtime_redis(line_id))
 
     if campus_name == "seoul":
-        [(main_update_time, main_line_arrival)] = await asyncio.gather(*tasks)
+        main_line_arrival = await asyncio.gather(*tasks)
         return SubwayDepartureResponse(
             stationName=subway_dict[campus_name][0][0],
             departureList=[
                 SubwayDepartureByLine(
                     lineName="2호선",
-                    updateTime=main_update_time,
                     realtime=main_line_arrival,
                     timetable=SubwayTimetableList(up=[], down=[]),
                 ),
             ],
         )
-    [(main_update_time, main_line_arrival), (sub_update_time, sub_line_arrival)] = \
-        await asyncio.gather(*tasks)
+    [main_line_arrival, sub_line_arrival] = await asyncio.gather(*tasks)
     return SubwayDepartureResponse(
         stationName=subway_dict[campus_name][0][0],
         departureList=[
             SubwayDepartureByLine(
                 lineName="4호선",
-                updateTime=main_update_time,
                 realtime=main_line_arrival,
                 timetable=await fetch_subway_timetable("1004"),
             ),
             SubwayDepartureByLine(
                 lineName="수인분당선",
-                updateTime=sub_update_time,
                 realtime=sub_line_arrival,
                 timetable=await fetch_subway_timetable("1075"),
             ),
