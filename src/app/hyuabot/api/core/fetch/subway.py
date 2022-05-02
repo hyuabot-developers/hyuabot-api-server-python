@@ -89,7 +89,10 @@ async def get_subway_realtime_information(line_name: str) -> None:
                                 (terminal_station not in ["오이도", "인천"] or
                                  current_station not in list(minute_to_arrival.keys())[60:]):
                             continue
-                    arrival_list[heading.replace("0", "up").replace("1", "down")].append({
+                    if any([x["trainNumber"] == train_number for x in
+                            arrival_list[heading.replace("0", "up").replace("1", "down")]]):
+                        continue
+                    subway_item = {
                         "trainNumber": train_number,
                         "updateTime": update_time,
                         "isLastTrain": is_last_train,
@@ -99,7 +102,9 @@ async def get_subway_realtime_information(line_name: str) -> None:
                         int(status_code) in status_code_dict.keys() else "출발",
                         "remainedTime": minute_to_arrival[current_station]
                         if current_station in minute_to_arrival.keys() else 0,
-                    })
+                    }
+
+                    arrival_list[heading.replace("0", "up").replace("1", "down")].append(subway_item)
 
                 redis_connection = await get_redis_connection("subway")
                 arrival_list["up"] = sorted(arrival_list["up"], key=lambda x: x["remainedTime"])
