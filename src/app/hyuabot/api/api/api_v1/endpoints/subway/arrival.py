@@ -38,8 +38,6 @@ async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> 
         )
         if item_time.hour < 4:
             item_time += datetime.timedelta(days=1)
-        if item_time < now:
-            continue
         timetable_after.append(item)
     await redis_connection.close()
     return timetable_after
