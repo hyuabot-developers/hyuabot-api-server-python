@@ -6,7 +6,7 @@ from app.hyuabot.api.initialize_data import initialize_data
 from app.hyuabot.api.core.config import AppSettings
 
 
-campus_keys = ["seoul", "erica"]
+campus_keys = ["erica"]
 
 
 @pytest.mark.asyncio

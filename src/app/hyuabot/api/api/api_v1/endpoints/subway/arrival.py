@@ -55,7 +55,8 @@ async def fetch_subway_realtime_redis(line_id: str) -> tuple[str, dict]:
 @arrival_router.get("/{campus_name}", status_code=200, response_model=SubwayDepartureResponse)
 async def fetch_subway_information(campus_name: str):
     subway_dict = {
-        "seoul": [("한양대", "1002")], "erica": [("한대앞", "1004"), ("한대앞", "1075")],
+        # "seoul": [("한양대", "1002")],
+        "erica": [("한대앞", "1004"), ("한대앞", "1075")],
     }
 
     if campus_name not in subway_dict:
