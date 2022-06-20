@@ -26,8 +26,6 @@ async def test_subway_arrival():
             for departure_info_item in response_json["departureList"]:
                 assert "lineName" in departure_info_item.keys() and \
                        type(departure_info_item["lineName"]) == str
-                assert "updateTime" in departure_info_item.keys() and \
-                       type(departure_info_item["updateTime"]) == str
                 assert "realtime" in departure_info_item.keys() and \
                        type(departure_info_item["realtime"]) == dict
 
