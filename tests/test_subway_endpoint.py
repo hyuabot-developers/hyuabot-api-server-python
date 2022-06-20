@@ -6,7 +6,7 @@ from app.hyuabot.api.initialize_data import initialize_data
 from app.hyuabot.api.core.config import AppSettings
 
 
-campus_keys = ["seoul", "erica"]
+campus_keys = ["erica"]
 
 
 @pytest.mark.asyncio
@@ -26,8 +26,6 @@ async def test_subway_arrival():
             for departure_info_item in response_json["departureList"]:
                 assert "lineName" in departure_info_item.keys() and \
                        type(departure_info_item["lineName"]) == str
-                assert "updateTime" in departure_info_item.keys() and \
-                       type(departure_info_item["updateTime"]) == str
                 assert "realtime" in departure_info_item.keys() and \
                        type(departure_info_item["realtime"]) == dict
 
