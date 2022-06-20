@@ -1,6 +1,5 @@
 import asyncio
 import json
-from collections import defaultdict
 
 import aiohttp
 from fastapi import APIRouter
@@ -51,7 +50,7 @@ async def get_subway_realtime_information(line_name: str) -> None:
           f"realtimePosition/0/60/{line_name}"
     timeout = aiohttp.ClientTimeout(total=3.0)
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        arrival_list = {"up": [], "down": []}
+        arrival_list: dict = {"up": [], "down": []}
         async with session.get(url) as response:
             response_json = await response.json()
             if "realtimePositionList" in response_json.keys():
