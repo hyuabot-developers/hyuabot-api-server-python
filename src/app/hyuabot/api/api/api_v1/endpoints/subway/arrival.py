@@ -6,7 +6,6 @@ from fastapi import APIRouter, HTTPException
 
 from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
-from app.hyuabot.api.core.fetch.subway import get_subway_realtime_information
 from app.hyuabot.api.schemas.subway import \
     SubwayDepartureResponse, SubwayDepartureByLine, SubwayTimetableList
 
