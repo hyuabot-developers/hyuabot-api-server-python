@@ -1,5 +1,4 @@
 fastapi>=0.73.0
-aioredis>=2.0.1
 holidays>=0.13
 pydantic>=1.9.0
 hypercorn>=0.13.2
@@ -12,3 +11,5 @@ httpx>=0.22.0
 grequests>=0.6.0
 gevent>=21.12.0
 lxml>=4.8.0
+psycopg2-binary>=2.9.3
+SQLAlchemy>=1.4.37
