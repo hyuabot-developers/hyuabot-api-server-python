@@ -1,0 +1,21 @@
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.sql import sqltypes
+
+from app.hyuabot.api.models.postgresql import BaseModel
+
+
+class ShuttlePeriod(BaseModel):
+    __tablename__ = 'shuttle_period'
+    period = Column(sqltypes.String)
+    start_date = Column(sqltypes.DateTime)
+    end_date = Column(sqltypes.DateTime)
+
+
+class ShuttleTimetable(BaseModel):
+    __tablename__ = 'shuttle_timetable'
+    period = Column(sqltypes.String, ForeignKey('shuttle_period.period'))
+    weekday = Column(sqltypes.String, primary_key=True)
+    shuttle_type = Column(sqltypes.String, primary_key=True)
+    shuttle_time = Column(sqltypes.Time, primary_key=True)
+    start_stop = Column(sqltypes.String, primary_key=True)
+
