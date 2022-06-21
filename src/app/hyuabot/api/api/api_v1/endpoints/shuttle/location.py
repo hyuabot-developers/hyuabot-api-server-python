@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.schemas.shuttle import ShuttleListResponse, ShuttleListItem
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type
@@ -25,13 +24,13 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
         })
 
     now = datetime.now(tz=korea_standard_time)
-    redis_connection = await get_redis_connection("shuttle")
-    key = f"shuttle_{current_term}_{weekdays_keys}"
-    json_string: bytes = await get_redis_value(redis_connection, key)
-    timetable: list[dict] = [shuttle_item
-                             for shuttle_item in json.loads(json_string.decode("utf-8"))
-                             if shuttle_item["type"] == shuttle_type]
-
+    # redis_connection = await get_redis_connection("shuttle")
+    # key = f"shuttle_{current_term}_{weekdays_keys}"
+    # json_string: bytes = await get_redis_value(redis_connection, key)
+    # timetable: list[dict] = [shuttle_item
+    #                          for shuttle_item in json.loads(json_string.decode("utf-8"))
+    #                          if shuttle_item["type"] == shuttle_type]
+    timetable = []
     shuttle_departure_list: list[ShuttleListItem] = []
     if shuttle_type == "DH" or shuttle_type == "DY":
         for shuttle_index, shuttle_time in enumerate(timetable):
@@ -91,5 +90,4 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
                 ))
             elif shuttle_departure_time > now:
                 break
-    await redis_connection.close()
     return ShuttleListResponse(message="정상 처리되었습니다.", shuttleList=shuttle_departure_list)

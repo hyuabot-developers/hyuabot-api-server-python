@@ -7,8 +7,6 @@ from bs4 import BeautifulSoup
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
-
 fetch_restaurant_menu_router = APIRouter(prefix="/food")
 
 
@@ -62,7 +60,3 @@ async def fetch_restaurant_menu_by_id(restaurant_key: str, response) -> None:
                 menu = list_item.find("h3").text.replace("\t", "").replace("\r\n", "")
                 p = list_item.find("p", {"class": "price"}).text
                 cafeteria_info["menu"][title].append({"menu": menu, "price": p})
-    redis_connection = await get_redis_connection("restaurant")
-    await set_redis_value(redis_connection, restaurant_key,
-                          json.dumps(cafeteria_info, ensure_ascii=False).encode("utf-8"))
-    await redis_connection.close()

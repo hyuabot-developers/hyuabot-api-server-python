@@ -7,11 +7,11 @@ from sqlalchemy import create_engine
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.hyuabot.api.api.api_v1 import API_V1_ROUTERS
-from app.hyuabot.api.context import AppContext
-from app.hyuabot.api.core.config import AppSettings
-from app.hyuabot.api.core.fetch import fetch_router
-from app.hyuabot.api.initialize_data import initialize_data
+from .api.api_v1 import API_V1_ROUTERS
+from .context import AppContext
+from .core.config import AppSettings
+from .core.fetch import fetch_router
+from .initialize_data import initialize_data
 
 
 def create_app(app_settings: AppSettings) -> FastAPI:

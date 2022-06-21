@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from sqlalchemy.engine import Engine
 
 if TYPE_CHECKING:
-    from app.hyuabot.api.core.config import AppSettings
+    from .core.config import AppSettings
 
 
 class AppContext(NamedTuple):

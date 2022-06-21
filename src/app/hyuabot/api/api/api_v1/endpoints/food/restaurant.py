@@ -3,7 +3,6 @@ import json
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.schemas.cafeteria import CafeteriaItem
 
 restaurant_id_dict = {
@@ -26,13 +25,13 @@ restaurant_router = APIRouter(prefix="/restaurant")
 @restaurant_router.get("/{restaurant_id}", status_code=200, response_model=CafeteriaItem,
                        tags=["Restaurant Menu"])
 async def fetch_restaurant(restaurant_id: str):
-    if restaurant_id in restaurant_id_dict.keys():
-        redis_connection = await get_redis_connection("restaurant")
-        json_string = await get_redis_value(redis_connection, restaurant_id)
-        restaurant_item = json.loads(json_string.decode("utf-8"))
-        await redis_connection.close()
-        return {
-            "name": restaurant_id_dict[restaurant_id], "workingTime": restaurant_item["time"],
-            "menuList": restaurant_item["menu"],
-        }
+    # if restaurant_id in restaurant_id_dict.keys():
+        # redis_connection = await get_redis_connection("restaurant")
+        # json_string = await get_redis_value(redis_connection, restaurant_id)
+        # restaurant_item = json.loads(json_string.decode("utf-8"))
+        # await redis_connection.close()
+        # return {
+        #     "name": restaurant_id_dict[restaurant_id], "workingTime": restaurant_item["time"],
+        #     "menuList": restaurant_item["menu"],
+        # }
     return JSONResponse(status_code=404, content={"message": "Not Found"})

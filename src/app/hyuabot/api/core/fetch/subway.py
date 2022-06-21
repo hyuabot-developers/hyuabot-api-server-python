@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.core.config import AppSettings
-from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
+# from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
 
 status_code_dict = {0: "진입", 1: "도착"}
 line_code_dict = {"2호선": 1002, "4호선": 1004, "수인분당선": 1075}
@@ -105,11 +105,11 @@ async def get_subway_realtime_information(line_name: str) -> None:
 
                     arrival_list[heading.replace("0", "up").replace("1", "down")].append(subway_item)
 
-                redis_connection = await get_redis_connection("subway")
+                # redis_connection = await get_redis_connection("subway")
                 arrival_list["up"] = sorted(arrival_list["up"], key=lambda x: x["remainedTime"])
                 arrival_list["down"] = sorted(arrival_list["down"], key=lambda x: x["remainedTime"])
-                await set_redis_value(redis_connection,
-                                      f"subway_{line_code_dict[line_name]}_position",
-                                      json.dumps(
-                                          arrival_list, ensure_ascii=False).encode("utf-8"))
-                await redis_connection.close()
+                # await set_redis_value(redis_connection,
+                #                       f"subway_{line_code_dict[line_name]}_position",
+                #                       json.dumps(
+                #                           arrival_list, ensure_ascii=False).encode("utf-8"))
+                # await redis_connection.close()

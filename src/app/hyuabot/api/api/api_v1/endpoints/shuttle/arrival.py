@@ -7,7 +7,6 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepartureItem, \
     ShuttleDeparture, ShuttleDepartureTimetable, ShuttleTimetableOnly
@@ -26,11 +25,9 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
                                   weekdays_keys: str, get_all: bool = False) -> \
         Tuple[list[ShuttleDepartureItem], list[ShuttleDepartureItem]]:
     now = datetime.now(tz=korea_standard_time)
-    redis_connection = await get_redis_connection("shuttle")
     key = f"shuttle_{current_term}_{weekdays_keys}"
-    json_string: bytes = await get_redis_value(redis_connection, key)
-    timetable: list[dict] = json.loads(json_string.decode("utf-8"))
-
+    # timetable: list[dict] = json.loads(json_string.decode("utf-8"))
+    timetable = []
     shuttle_for_station: list[ShuttleDepartureItem] = []
     shuttle_for_terminal: list[ShuttleDepartureItem] = []
 
@@ -116,7 +113,6 @@ async def fetch_timetable_by_stop(shuttle_stop: str, current_term: str,
                 shuttle_for_terminal.append(ShuttleDepartureItem(
                     time=shuttle_departure_time.strftime("%H:%M"), type=shuttle_time["type"],
                 ))
-    await redis_connection.close()
     return shuttle_for_station, shuttle_for_terminal
 
 

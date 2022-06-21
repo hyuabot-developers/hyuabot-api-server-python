@@ -5,7 +5,7 @@ from typing import AsyncIterator
 from fastapi import Request
 from sqlalchemy.orm import Session
 
-from app.hyuabot.api import AppContext
+from app.hyuabot.api.context import AppContext
 
 
 _SQLA_SESSION_CLOSER_THREADPOOL = ThreadPoolExecutor(1)

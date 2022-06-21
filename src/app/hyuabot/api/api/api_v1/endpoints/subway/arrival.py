@@ -4,7 +4,6 @@ import json
 
 from fastapi import APIRouter, HTTPException
 
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
 from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.schemas.subway import \
     SubwayDepartureResponse, SubwayDepartureByLine, SubwayTimetableList
@@ -26,9 +25,7 @@ async def fetch_subway_timetable(line_id: str) -> dict:
 async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> list[dict]:
     now = datetime.datetime.now(tz=korea_standard_time)
 
-    redis_connection = await get_redis_connection("subway")
-    json_string = await get_redis_value(redis_connection, f"subway_{line_id}_{day}_{heading}")
-    timetable: list[dict] = json.loads(json_string.decode("utf-8"))
+    timetable: list[dict] = []
     timetable_after = []
 
     for item in timetable:
@@ -38,18 +35,11 @@ async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> 
         if item_time.hour < 4:
             item_time += datetime.timedelta(days=1)
         timetable_after.append(item)
-    await redis_connection.close()
     return timetable_after
 
 
 async def fetch_subway_realtime_redis(line_id: str) -> tuple[str, dict]:
-    redis_connection = await get_redis_connection("subway")
-    arrival_list_string = \
-        await get_redis_value(redis_connection, f"subway_{line_id}_position")
-
-    arrival_list = json.loads(arrival_list_string.decode("utf-8"))
-    await redis_connection.close()
-    return arrival_list
+    return "", {}
 
 
 @arrival_router.get("/{campus_name}", status_code=200, response_model=SubwayDepartureResponse)

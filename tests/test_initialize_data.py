@@ -3,9 +3,9 @@ import re
 
 import pytest
 
-from app.hyuabot.api.core.database import get_redis_connection
-from app.hyuabot.api.initialize_data import load_shuttle_timetable, store_shuttle_date_redis, \
-    load_bus_timetable, load_subway_timetable
+# from app.hyuabot.api.core.database import get_redis_connection
+# from app.hyuabot.api.initialize_data import load_shuttle_timetable, store_shuttle_date_redis, \
+#     load_bus_timetable, load_subway_timetable
 
 
 @pytest.mark.asyncio
@@ -13,9 +13,9 @@ async def test_store_shuttle_timetable():
     term_keys = ["semester", "vacation"]
     day_keys = ["weekdays", "weekends"]
 
-    await load_shuttle_timetable()
+    # await load_shuttle_timetable()
 
-    redis_connection = await get_redis_connection("shuttle")
+    # redis_connection = await get_redis_connection("shuttle")
     async with redis_connection.client() as connection:
         for term in term_keys:
             for day in day_keys:
@@ -40,9 +40,9 @@ async def test_store_shuttle_timetable():
 @pytest.mark.asyncio
 async def test_store_shuttle_date():
     date_regex = re.compile(r"^\d{1,2}/\d{1,2}$")
-    await store_shuttle_date_redis()
+    # await store_shuttle_date_redis()
 
-    redis_connection = await get_redis_connection("shuttle")
+    # redis_connection = await get_redis_connection("shuttle")
     async with redis_connection.client() as connection:
         key = "shuttle_date"
         json_string: bytes = await connection.get(key)
