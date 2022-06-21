@@ -1,139 +1,270 @@
 import asyncio
 import csv
 import json
+from datetime import datetime, timezone, timedelta
 
 from aiohttp import ClientSession
-from aioredis import Redis
+from sqlalchemy.orm import Session
 
-# 초기 서버 시작 시 셔틀 버스 정보 redis 저장
-from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
-from app.hyuabot.api.core.fetch.bus import fetch_bus_realtime_in_a_row
-from app.hyuabot.api.core.fetch.reading_room import fetch_reading_room_api, fetch_reading_room
-from app.hyuabot.api.core.fetch.subway import fetch_subway_realtime_information
+from app.hyuabot.api.models.postgresql.bus import BusRoute, BusStop
+from app.hyuabot.api.models.postgresql.cafeteria import Cafeteria
+from app.hyuabot.api.models.postgresql.campus import Campus
+from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
+from app.hyuabot.api.models.postgresql.shuttle import ShuttlePeriod
+from app.hyuabot.api.models.postgresql.subway import SubwayRoute, SubwayStation, SubwayTimetable
+from app.hyuabot.api.schemas.bus import BusTimetable
+from app.hyuabot.api.schemas.shuttle import ShuttleTimetable
 
 
-async def load_shuttle_timetable():
-    redis_connection = await get_redis_connection("shuttle")
+def insert_campus_items(db_session: Session):
+    campuses = [Campus(campus_name='서울', campus_id=0), Campus(campus_name='ERICA', campus_id=1)]
+    db_session.add_all(campuses)
 
+
+def insert_cafetaria_items(db_session: Session):
+    cafeteria_list = [
+        Cafeteria(cafeteria_id='1', campus_id=0, cafeteria_name='학생식당'),
+        Cafeteria(cafeteria_id='2', campus_id=0, cafeteria_name='생활과학관 식당'),
+        Cafeteria(cafeteria_id='4', campus_id=0, cafeteria_name='신소재공학관 식당'),
+        Cafeteria(cafeteria_id='6', campus_id=0, cafeteria_name='제1생활관식당'),
+        Cafeteria(cafeteria_id='7', campus_id=0, cafeteria_name='제2생활관식당'),
+        Cafeteria(cafeteria_id='8', campus_id=0, cafeteria_name='행원파크'),
+        Cafeteria(cafeteria_id='11', campus_id=1, cafeteria_name='교직원식당'),
+        Cafeteria(cafeteria_id='12', campus_id=1, cafeteria_name='학생식당'),
+        Cafeteria(cafeteria_id='13', campus_id=1, cafeteria_name='창의인재원식당'),
+        Cafeteria(cafeteria_id='14', campus_id=1, cafeteria_name='푸드코트'),
+        Cafeteria(cafeteria_id='15', campus_id=1, cafeteria_name='창업보육센터'),
+    ]
+    db_session.add_all(cafeteria_list)
+
+
+def insert_reading_room_items(db_session: Session):
+    reading_room_list = [
+        ReadingRoom(room_name='HOLMZ 열람석', campus_id=0),
+        ReadingRoom(room_name='제1열람실[지하1층]', campus_id=0),
+        ReadingRoom(room_name='제2열람실[지하1층]', campus_id=0),
+        ReadingRoom(room_name='제3열람실[3층]', campus_id=0),
+        ReadingRoom(room_name='제3열람실[4층]', campus_id=0),
+        ReadingRoom(room_name='법학 대학원열람실[2층]', campus_id=0),
+        ReadingRoom(room_name='법학 제1열람실[3층]', campus_id=0),
+        ReadingRoom(room_name='법학 제2열람실A[4층]', campus_id=0),
+        ReadingRoom(room_name='법학 제2열람실B[4층]', campus_id=0),
+        ReadingRoom(room_name='제1열람실 (2F)', campus_id=1),
+        ReadingRoom(room_name='제2열람실 (4F)', campus_id=1),
+        ReadingRoom(room_name='제3열람실 (4F)', campus_id=1),
+    ]
+    db_session.add_all(reading_room_list)
+
+
+async def insert_shuttle_period_items(db_session: Session):
+    url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main/date.json"
+
+    period_items = []
+    now = datetime.now(tz=timezone(timedelta(hours=9)))
+    async with ClientSession() as session:
+        async with session.get(url) as response:
+            date_json = json.loads(await response.text())
+            for holiday in date_json['holiday']:
+                month, day = holiday.split('/')
+                if now.month > int(month) or (now.month == int(month) and now.day > int(day)):
+                    year = now.year + 1
+                else:
+                    year = now.year
+                period_items.append(
+                    ShuttlePeriod(
+                        period="holiday",
+                        start_date=datetime.fromisoformat(f"{year}-{month}-{day}T00:00:00+09:00"),
+                        end_date=datetime.fromisoformat(f"{year}-{month}-{day}T23:59:59+09:00"),
+                    ))
+            for holiday in date_json['halt']:
+                month, day = holiday.split('/')
+                if now.month > int(month) or (now.month == int(month) and now.day > int(day)):
+                    year = now.year + 1
+                else:
+                    year = now.year
+                period_items.append(
+                    ShuttlePeriod(
+                        period="halt",
+                        start_date=datetime.fromisoformat(f"{year}-{month}-{day}T00:00:00+09:00"),
+                        end_date=datetime.fromisoformat(f"{year}-{month}-{day}T23:59:59+09:00"),
+                    ))
+            for period in ["semester", "vaction", "vacation_session"]:
+                for period_item in date_json[period]:
+                    start_month, start_day = period_item["start"].split('/')
+                    end_month, end_day = period_item["end"].split('/')
+                    if now.month < int(start_month) or \
+                            (now.month == int(start_month) and now.day < int(start_day)):
+                        start_year = now.year
+                        if start_month > end_month or (start_month == end_month and start_day > end_day):
+                            end_year = now.year + 1
+                        else:
+                            end_year = now.year
+                    else:
+                        start_year = now.year + 1
+                        if start_month > end_month or (start_month == end_month and start_day > end_day):
+                            end_year = now.year + 2
+                        else:
+                            end_year = now.year + 1
+                    period_items.append(
+                        ShuttlePeriod(
+                            period=period,
+                            start_date=datetime.fromisoformat(
+                                f"{start_year}-{start_month}-{start_day}T00:00:00+09:00"),
+                            end_date=datetime.fromisoformat(
+                                f"{end_year}-{end_month}-{end_day}T23:59:59+09:00"),
+                        ))
+            db_session.add_all(period_items)
+            await insert_shuttle_timetable_items(db_session)
+
+
+async def insert_shuttle_timetable_items(db_session: Session):
     term_keys = ["semester", "vacation"]
     day_keys = ["week", "weekend"]
-    day_dict = {"week": "weekdays", "weekend": "weekends"}
 
-    base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main"
     tasks = []
     for term in term_keys:
         for day in day_keys:
-            url = f"{base_url}/{term}/{day}.csv"
-            key = f"shuttle_{term}_{day_dict[day]}"
-            tasks.append(store_shuttle_timetable_redis(redis_connection, url, key))
+            tasks.append(fetch_shuttle_timetable(term, day))
 
-    await asyncio.gather(*tasks)
-    await redis_connection.close()
+    loop = asyncio.get_event_loop()
+    timetable = loop.run_until_complete(asyncio.gather(*tasks))
+    for timetable_item in timetable:
+        db_session.add_all(timetable_item)
 
 
-async def store_shuttle_timetable_redis(redis_connection: Redis, url: str, key: str):
+async def fetch_shuttle_timetable(term: str, day: str) -> list[ShuttleTimetable]:
+    base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main"
+    url = f"{base_url}/{term}/{day}.csv"
+    day_dict = {"week": "weekdays", "weekend": "weekends"}
+    timetable: list[ShuttleTimetable] = []
     async with ClientSession() as session:
         async with session.get(url) as response:
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
-            timetable: list[dict] = []
             for shuttle_type, shuttle_time, shuttle_start_stop in reader:
-                timetable.append({
-                    "type": shuttle_type,
-                    "time": shuttle_time,
-                    "startStop": shuttle_start_stop,
-                })
-            await set_redis_value(redis_connection, key,
-                                  json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
+                timetable.append(
+                    ShuttleTimetable(
+                        period=day_dict[day],
+                        shuttle_type=shuttle_type,
+                        shuttle_time=shuttle_time,
+                        start_stop=shuttle_start_stop,
+                    )
+                )
+    return timetable
 
 
-async def store_shuttle_date_redis():
-    redis_connection = await get_redis_connection("shuttle")
-
-    url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-shuttle-timetable/main/date.json"
-    key = "shuttle_date"
-
-    async with ClientSession() as session:
-        async with session.get(url) as response:
-            date = json.loads(await response.text())
-            await set_redis_value(redis_connection, key,
-                                  json.dumps(date, ensure_ascii=False).encode("utf-8"))
-    await redis_connection.close()
+def insert_subway_route_items(db_session: Session):
+    route_list = [
+        SubwayRoute(route_name="4호선", route_id=1004),
+        SubwayRoute(route_name="수인분당선", route_id=1075),
+    ]
+    db_session.add_all(route_list)
 
 
-# 초기 서버 시작 시 노선 버스 정보 redis 저장
-async def load_bus_timetable():
-    redis_connection = await get_redis_connection("bus")
+def insert_subway_station_items(db_session: Session):
+    station_list = [
+        SubwayStation(station_name="한대앞")
+    ]
+    db_session.add_all(station_list)
 
-    day_keys = ["weekdays", "saturday", "sunday"]
-    line_keys = ["10-1", "707-1", "3102"]
 
-    base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-bus-timetable/main"
+async def insert_subway_timetable_items(db_session: Session):
+    route_list = ["4호선", "수인분당선"]
+    weekday_list = ["weekdays", "weekends"]
+    heading_list = ["up", "down"]
+    station_list = ["한대앞"]
+
     tasks = []
-    for line in line_keys:
-        for day in day_keys:
-            url = f"{base_url}/{line}/{day}/timetable.csv"
-            key = f"bus_{line}_{day}"
-            tasks.append(store_bus_timetable_redis(redis_connection.client(), url, key))
+    for station_name in station_list:
+        for route_name in route_list:
+            for weekday in weekday_list:
+                for heading in heading_list:
+                    tasks.append(fetch_subway_timetable_items(station_name, route_name, weekday, heading))
 
-    await asyncio.gather(*tasks)
-    await redis_connection.close()
-
-
-async def store_bus_timetable_redis(redis_connection: Redis, url: str, key: str):
-    async with ClientSession() as session:
-        async with session.get(url) as response:
-            reader = csv.reader((await response.text()).splitlines(), delimiter=",")
-            timetable: list[str] = []
-            for bus_arrival_time in reader:
-                timetable.append(bus_arrival_time[0])
-            await set_redis_value(redis_connection, key,
-                                  json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
+    loop = asyncio.get_event_loop()
+    timetable = loop.run_until_complete(asyncio.gather(*tasks))
+    for timetable_item in timetable:
+        db_session.add_all(timetable_item)
 
 
-# 초기 서버 시작 시 전철 출발 정보 redis 저장
-async def load_subway_timetable():
-    redis_connection = await get_redis_connection("subway")
-    line_keys = [("skyblue", "1004"), ("yellow", "1075")]
-    day_keys = ["weekdays", "weekends"]
-    heading_keys = ["up", "down"]
-
+async def fetch_subway_timetable_items(station_name: str, route_name: str, weekday: str, heading: str) \
+        -> list[SubwayTimetable]:
     base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-subway-timetable/main"
-    tasks = []
-    for line, line_id in line_keys:
-        for day in day_keys:
-            for heading in heading_keys:
-                url = f"{base_url}/{line}/{day}/{heading}.csv"
-                key = f"subway_{line_id}_{day}_{heading}"
-                tasks.append(store_subway_timetable_redis(redis_connection, url, key))
+    route_color_dict = {"4호선": "skyblue", "수인분당선": "yellow"}
+    url = f"{base_url}/{route_color_dict[route_name]}/{weekday}/{heading}.csv"
 
-    await asyncio.gather(*tasks)
-    await redis_connection.close()
-
-
-async def store_subway_timetable_redis(redis_connection: Redis, url: str, key: str):
     async with ClientSession() as session:
         async with session.get(url) as response:
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
-            timetable: list[dict] = []
-            for terminate_station, departure_time in reader:
-                timetable.append({
-                    "terminalStation": terminate_station,
-                    "departureTime": departure_time,
-                })
-            await set_redis_value(redis_connection, key,
-                                  json.dumps(timetable, ensure_ascii=False).encode("utf-8"))
+            timetable: list[SubwayTimetable] = []
+            for terminal_station, departure_time in reader:
+                timetable.append(SubwayTimetable(
+                    route_name=route_name,
+                    station_name=station_name,
+                    heading=heading,
+                    weekday=weekday,
+                    terminal_station=terminal_station,
+                    departure_time=departure_time,
+                ))
+    return timetable
 
 
-async def initialize_data():
-    tasks = {
-        load_shuttle_timetable(),
-        store_shuttle_date_redis(),
-        load_bus_timetable(),
-        load_subway_timetable(),
-        fetch_reading_room_api("seoul", 1),
-        fetch_reading_room_api("erica", 2),
-        fetch_bus_realtime_in_a_row(),
-        fetch_reading_room(),
-        fetch_subway_realtime_information(),
-    }
+def insert_bus_route_items(db_session: Session):
+    route_list = [
+        BusRoute(route_name="10-1", gbis_id=216000068),
+        BusRoute(route_name="707-1", gbis_id=216000070),
+        BusRoute(route_name="3102", gbis_id=216000068),
+    ]
+    db_session.add_all(route_list)
+
+
+def insert_bus_station_items(db_session: Session):
+    station_list = [
+        BusStop(stop_name="한양대게스트하우스", gbis_id=216000379),
+        BusStop(stop_name="한양대정문", gbis_id=216000719),
+    ]
+    db_session.add_all(station_list)
+
+
+async def insert_bus_timetable_items(db_session: Session):
+    weekday_list = ["weekdays", "saturday", "sunday"]
+    route_list = ["10-1", "707-1", "3102"]
+
+    tasks = []
+    for route_name in route_list:
+        for weekday in weekday_list:
+            tasks.append(fetch_bus_timetable(db_session, route_name, weekday))
+
+    loop = asyncio.get_event_loop()
+    timetable = loop.run_until_complete(asyncio.gather(*tasks))
+    for timetable_item in timetable:
+        db_session.add_all(timetable_item)
+
+
+async def fetch_bus_timetable(db_session: Session, route_name: str, weekday: str) -> list[BusTimetable]:
+    base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-bus-timetable/main"
+    url = f"{base_url}/{route_name}/{weekday}/timetable.csv"
+    route_id = db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first().gbis_id
+    timetable: list[BusTimetable] = []
+    async with ClientSession() as session:
+        async with session.get(url) as response:
+            reader = csv.reader((await response.text()).splitlines(), delimiter=",")
+            for departure_time in reader:
+                timetable.append(BusTimetable(route_id=route_id, departure_time=departure_time))
+    return timetable
+
+
+async def initialize_data(db_session: Session):
+    insert_campus_items(db_session)
+    insert_cafetaria_items(db_session)
+    insert_reading_room_items(db_session)
+    insert_subway_route_items(db_session)
+    insert_subway_station_items(db_session)
+    insert_bus_route_items(db_session)
+    insert_bus_station_items(db_session)
+    tasks = [
+        insert_shuttle_period_items(db_session),
+        insert_subway_timetable_items(db_session),
+        insert_bus_timetable_items(db_session),
+    ]
     await asyncio.gather(*tasks)
+    db_session.commit()
