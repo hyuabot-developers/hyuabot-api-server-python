@@ -1,20 +1,33 @@
-import json
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
-from fastapi import APIRouter
-
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
+from app.hyuabot.api.models.postgresql.campus import Campus
+from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 from app.hyuabot.api.schemas.reading_room import ReadingRoomItem
-
+from app.hyuabot.api.utlis.fastapi import get_db_session
 
 reading_room_router = APIRouter(prefix="/library")
 
 
 @reading_room_router.get("/{campus_name}", status_code=200,
                          response_model=list[ReadingRoomItem], tags=["Reading room seat by campus"])
-async def fetch_reading_room_by_campus(campus_name: str):
-    redis_connection = await get_redis_connection("reading_room")
-    key = f"{campus_name.lower()}_reading_room"
-    json_string: bytes = await get_redis_value(redis_connection, key)
-    reading_room_list: list[ReadingRoomItem] = json.loads(json_string.decode("utf-8"))
-    await redis_connection.close()
+async def fetch_reading_room_by_campus(campus_name: str, db_session: Session = Depends(get_db_session)):
+    campus_query = db_session.query(Campus).filter(Campus.campus_name == campus_name).one_or_none()
+    if campus_query is None:
+        return JSONResponse(status_code=404, content={"message": "존재하지 않는 캠퍼수입니다."})
+    campus_id = campus_query.campus_id
+    room_query: list[ReadingRoom] = \
+        db_session.query(ReadingRoom).filter(ReadingRoom.campus_id == campus_id).all()
+    reading_room_list = []
+    for reading_room in room_query:
+        reading_room_list.append(ReadingRoomItem(
+            name=reading_room.name,
+            is_active=reading_room.is_active,
+            is_reservable=reading_room.is_reservable,
+            total=reading_room.total_seat,
+            active_total=reading_room.active_seat,
+            occupied=reading_room.occupied_seat,
+            available=reading_room.available_seat,
+        ))
     return reading_room_list
