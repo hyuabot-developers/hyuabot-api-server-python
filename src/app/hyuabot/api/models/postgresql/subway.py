@@ -7,7 +7,7 @@ from app.hyuabot.api.models.postgresql import BaseModel
 class SubwayRoute(BaseModel):
     __tablename__ = 'subway_route'
     route_name = Column(sqltypes.String, primary_key=True)
-    route_id = Column(sqltypes.String)
+    route_id = Column(sqltypes.Integer)
 
 
 class SubwayStation(BaseModel):
