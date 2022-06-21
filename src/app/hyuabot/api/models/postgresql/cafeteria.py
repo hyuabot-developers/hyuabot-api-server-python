@@ -7,7 +7,7 @@ from app.hyuabot.api.models.postgresql import BaseModel
 class Cafeteria(BaseModel):
     __tablename__ = 'cafeteria'
     cafeteria_id = Column(sqltypes.String, primary_key=True)
-    campus_id = Column(sqltypes.String, ForeignKey('campus.campus_id'))
+    campus_id = Column(sqltypes.Integer, ForeignKey('campus.campus_id'))
     cafeteria_name = Column(sqltypes.String)
 
 
