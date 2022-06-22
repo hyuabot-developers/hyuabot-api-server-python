@@ -1,33 +1,15 @@
-from datetime import time
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.bus import timetable_limit
+from app.hyuabot.api.api.api_v1.endpoints.bus import timetable_limit, convert_bus_realtime_item, \
+    convert_bus_timetable_item
 from app.hyuabot.api.models.postgresql import bus as db
-from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse, \
-    BusRealtimeItem
+from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse
 from app.hyuabot.api.utlis.fastapi import get_db_session
 
 arrival_router = APIRouter(prefix="/arrival")
 start_stop_dict = {"10-1": "푸르지오6차후문", "707-1": "신안산대학교", "3102": "새솔고"}
-
-
-def convert_bus_realtime_item(items: list[db.BusRealtime]) -> list[BusRealtimeItem]:
-    return [
-        BusRealtimeItem(
-            low_plate=item.low_plate,
-            location=item.remained_stop,
-            remained_time=item.remained_time,
-            remained_seat=item.remained_seat,
-        )
-        for item in items
-    ]
-
-
-def convert_bus_timetable_item(items: list[db.BusTimetable]) -> list[time]:
-    return [item.departure_time for item in items]
 
 
 @arrival_router.get("", status_code=200, response_model=BusStopInformationResponse)
