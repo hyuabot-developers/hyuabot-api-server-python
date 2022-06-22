@@ -4,55 +4,55 @@ from typing import Tuple
 
 import holidays
 from korean_lunar_calendar import KoreanLunarCalendar
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from app.hyuabot.api.models.postgresql.shuttle import ShuttlePeriod
 
 korea_standard_time = timezone(timedelta(hours=9))
 
 
-async def get_shuttle_term(date: datetime = None) -> Tuple[bool, str, str, str]:
+async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
+        -> Tuple[bool, str, str, str]:
     """
     오늘 날짜에 대한 셔틀 운행 타입을 반환합니다.
-    :param date: 날짜
+    :param db_session:
+    :param date_item:
     :return:
     셔틀 운행 여부(True/False),
     셔틀 운행 타입(semester, vacation, vacation_session)
     """
-    if date is None:
-        date = datetime.now(tz=korea_standard_time)
+    if date_item is None:
+        date_item = datetime.now(tz=korea_standard_time)
 
     calendar = KoreanLunarCalendar()
-    calendar.setSolarDate(date.year, date.month, date.day)
+    calendar.setSolarDate(date_item.year, date_item.month, date_item.day)
+    period_item = db_session.query(ShuttlePeriod)\
+        .filter(and_(
+            date_item >= ShuttlePeriod.start_date,
+            date_item <= ShuttlePeriod.end_date,
+            ShuttlePeriod.calendar_type == "solar"))\
+        .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
+    if period_item is None:
+        return True, "semester", "weekays", date_item.strftime("%Y-%m-%d %H:%M:%S")
 
     # 운행 여부 확인
     is_working = True
-    # if f"{date.month}/{date.day}" in date_json["halt"]["solar"]:
-    #     is_working = False
-    # elif f"{calendar.lunarMonth}/{calendar.lunarDay}" in date_json["halt"]["lunar"]:
-    #     is_working = False
+    if period_item.period == "halt":
+        is_working = False
 
-    # 운행 타입 확인
-    term_keys = ["semester", "vacation", "vacation_session"]
-    # current_term = ""
-    # for term_key in term_keys:
-    #     for term in date_json[term_key]:
-    #         start_date = datetime.strptime(term["start"], "%m/%d")\
-    #             .replace(year=date.year, tzinfo=korea_standard_time)
-    #         end_date = datetime.strptime(term["end"], "%m/%d")\
-    #             .replace(year=date.year, tzinfo=korea_standard_time)
-    #         if start_date >= end_date:
-    #             if date >= start_date:
-    #                 start_date = start_date.replace(year=date.year)
-    #                 end_date = end_date.replace(year=date.year + 1)
-    #             elif date <= end_date:
-    #                 start_date = start_date.replace(year=date.year - 1)
-    #                 end_date = end_date.replace(year=date.year)
-    #         if start_date <= date <= end_date:
-    #             current_term = term_key
-    #             break
-    #     if current_term:
-    #         break
+    lunar_period_item = db_session.query(ShuttlePeriod)\
+        .filter(and_(
+            date_item >= ShuttlePeriod.start_date,
+            date_item <= ShuttlePeriod.end_date,
+            ShuttlePeriod.calendar_type == "lunar",
+            ShuttlePeriod.period == "halt",))\
+        .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
+    if lunar_period_item is not None:
+        is_working = False
 
-    if date.weekday() >= 5 or date.strftime("%Y-%m-%d") in holidays.KR():
+    if date_item.weekday() >= 5 or date_item.strftime("%Y-%m-%d") in holidays.KR():
         weekday_key = "weekends"
     else:
         weekday_key = "weekdays"
-    return is_working, "current_term", weekday_key, date.strftime("%Y-%m-%d %H:%M:%S")
+    return is_working, period_item.period, weekday_key, date_item.strftime("%Y-%m-%d %H:%M:%S")
