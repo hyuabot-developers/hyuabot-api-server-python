@@ -98,31 +98,29 @@ async def insert_shuttle_period_items(db_session: Session):
                         ))
             for period in ["semester", "vacation", "vacation_session"]:
                 for period_item in date_json[period]:
-                    start_month, start_day = period_item["start"].split('/')
-                    end_month, end_day = period_item["end"].split('/')
-                    if now.month < int(start_month) or \
-                            (now.month == int(start_month) and now.day < int(start_day)):
-                        start_year = now.year
-                        if start_month > end_month or (start_month == end_month and start_day > end_day):
-                            end_year = now.year + 1
-                        else:
-                            end_year = now.year
+                    start_date = datetime.strptime(period_item['start'], "%m/%d")\
+                        .replace(year=now.year, hour=0, minute=0, second=0,
+                                 tzinfo=timezone(timedelta(hours=9)))
+                    end_date = datetime.strptime(period_item['end'], "%m/%d")\
+                        .replace(year=now.year, hour=23, minute=59, second=59,
+                                 tzinfo=timezone(timedelta(hours=9)))
+                    if start_date < end_date:
+                        if now > end_date:
+                            start_date = start_date.replace(year=now.year + 1)
+                            end_date = end_date.replace(year=now.year + 1)
                     else:
-                        start_year = now.year + 1
-                        if start_month > end_month or (start_month == end_month and start_day > end_day):
-                            end_year = now.year + 2
+                        if now < end_date:
+                            start_date = start_date.replace(year=now.year - 1)
                         else:
-                            end_year = now.year + 1
+                            end_date = end_date.replace(year=now.year + 1)
                     period_items.append(
                         ShuttlePeriod(
                             period=period,
-                            start_date=datetime.fromisoformat(
-                                f"{start_year}-{str(start_month).zfill(2)}-{str(start_day).zfill(2)}"
-                                f"T00:00:00+09:00"),
-                            end_date=datetime.fromisoformat(
-                                f"{end_year}-{str(end_month).zfill(2)}-{str(end_day).zfill(2)}"
-                                f"T23:59:59+09:00"),
+                            start_date=start_date,
+                            end_date=end_date,
+                            calendar_type=calendar_type,
                         ))
+
     db_session.query(ShuttlePeriod).delete()
     db_session.add_all(period_items)
     await insert_shuttle_timetable_items(db_session)
