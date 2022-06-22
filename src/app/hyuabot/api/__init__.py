@@ -4,6 +4,8 @@ import functools
 
 from fastapi import FastAPI
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from sqlalchemy_utils import database_exists, create_database, drop_database
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
@@ -12,6 +14,7 @@ from .context import AppContext
 from .core.config import AppSettings
 from .core.fetch import fetch_router
 from .initialize_data import initialize_data
+from .models.postgresql import BaseModel
 
 
 def create_app(app_settings: AppSettings) -> FastAPI:
@@ -37,9 +40,19 @@ def create_app(app_settings: AppSettings) -> FastAPI:
 
 async def _web_app_startup(app: FastAPI, app_settings: AppSettings) -> None:
     db_engine = create_engine(app_settings.DATABASE_URI, **app_settings.DATABASE_OPTIONS)
+    if database_exists(app_settings.DATABASE_URI):
+        drop_database(app_settings.DATABASE_URI)
+    create_database(app_settings.DATABASE_URI)
+    try:
+        BaseModel.metadata.create_all(db_engine)
+    except Exception as e:
+        print(e)
     app_context = AppContext(app_settings, db_engine)
     app.extra["app_context"] = app_context
-    await initialize_data()
+
+    db_session = Session(db_engine)
+    await initialize_data(db_session)
+    db_session.close()
 
 
 async def _web_app_shutdown(app: FastAPI) -> None:

@@ -6,5 +6,5 @@ from app.hyuabot.api.models.postgresql import BaseModel
 
 class Campus(BaseModel):
     __tablename__ = 'campus'
-    campus_name = Column(sqltypes.String, primary_key=True)
-    campus_id = Column(sqltypes.Integer)
+    campus_name = Column(sqltypes.String)
+    campus_id = Column(sqltypes.Integer, primary_key=True)

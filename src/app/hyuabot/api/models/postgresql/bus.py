@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.sql import sqltypes
 
 from app.hyuabot.api.models.postgresql import BaseModel
@@ -21,6 +21,9 @@ class BusStop(BaseModel):
 
 class BusRealtime(BaseModel):
     __tablename__ = 'bus_realtime'
+    __table_args__ = (
+        PrimaryKeyConstraint('route_id', 'stop_id', 'remained_time'),
+    )
     route_id = Column(sqltypes.Integer, ForeignKey('bus_route.gbis_id'))
     stop_id = Column(sqltypes.Integer, ForeignKey('bus_stop.gbis_id'))
     low_plate = Column(sqltypes.Boolean)
@@ -31,6 +34,9 @@ class BusRealtime(BaseModel):
 
 class BusTimetable(BaseModel):
     __tablename__ = 'bus_timetable'
+    __table_args__ = (
+        PrimaryKeyConstraint('route_id', 'weekday', 'departure_time'),
+    )
     route_id = Column(sqltypes.Integer, ForeignKey('bus_route.gbis_id'))
     weekday = Column(sqltypes.String)
     departure_time = Column(sqltypes.Time)

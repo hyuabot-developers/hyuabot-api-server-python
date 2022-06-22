@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.sql import sqltypes
 
 from app.hyuabot.api.models.postgresql import BaseModel
@@ -17,6 +17,9 @@ class SubwayStation(BaseModel):
 
 class SubwayRealtime(BaseModel):
     __tablename__ = 'subway_realtime'
+    __table_args__ = (
+        PrimaryKeyConstraint('route_name', 'station_name', 'remained_time'),
+    )
     route_name = Column(sqltypes.String, ForeignKey('subway_route.route_name'))
     station_name = Column(sqltypes.String, ForeignKey('subway_station.station_name'))
     heading = Column(sqltypes.String)
@@ -31,6 +34,9 @@ class SubwayRealtime(BaseModel):
 
 class SubwayTimetable(BaseModel):
     __tablename__ = 'subway_timetable'
+    __table_args__ = (
+        PrimaryKeyConstraint('route_name', 'weekday', 'heading', 'departure_time'),
+    )
     route_name = Column(sqltypes.String, ForeignKey('subway_route.route_name'))
     station_name = Column(sqltypes.String, ForeignKey('subway_station.station_name'))
     heading = Column(sqltypes.String)
