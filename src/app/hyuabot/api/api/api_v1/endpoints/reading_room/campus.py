@@ -22,11 +22,11 @@ async def fetch_reading_room_by_campus(campus_name: str, db_session: Session = D
     reading_room_list = []
     for reading_room in room_query:
         reading_room_list.append(ReadingRoomItem(
-            name=reading_room.name,
-            is_active=reading_room.is_active,
-            is_reservable=reading_room.is_reservable,
+            name=reading_room.room_name,
+            isActive=reading_room.is_active,
+            isReservable=reading_room.is_reservable,
             total=reading_room.total_seat,
-            active_total=reading_room.active_seat,
+            activeTotal=reading_room.active_seat,
             occupied=reading_room.occupied_seat,
             available=reading_room.available_seat,
         ))
