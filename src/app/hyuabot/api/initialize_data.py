@@ -219,9 +219,15 @@ async def fetch_subway_timetable_items(db_session: Session, station_name: str, r
 
 def insert_bus_route_items(db_session: Session):
     route_list = [
-        BusRoute(route_name="10-1", gbis_id=216000068),
-        BusRoute(route_name="707-1", gbis_id=216000070),
-        BusRoute(route_name="3102", gbis_id=216000061),
+        BusRoute(
+            route_name="10-1", gbis_id=216000068,
+            start_stop="푸르지오6차후문", terminal_stop="상록수역", time_from_start_stop=11),
+        BusRoute(
+            route_name="707-1", gbis_id=216000070,
+            start_stop="신안산대", terminal_stop="수원역", time_from_start_stop=23),
+        BusRoute(
+            route_name="3102", gbis_id=216000061,
+            start_stop="새솔고", terminal_stop="강남역", time_from_start_stop=28),
     ]
     db_session.query(BusRoute).delete()
     db_session.add_all(route_list)
