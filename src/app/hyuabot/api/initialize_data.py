@@ -15,7 +15,7 @@ from app.hyuabot.api.core.fetch.subway import fetch_subway_realtime_information
 async def load_shuttle_timetable():
     redis_connection = await get_redis_connection("shuttle")
 
-    term_keys = ["semester", "vacation"]
+    term_keys = ["semester", "vacation", "vaccation_session"]
     day_keys = ["week", "weekend"]
     day_dict = {"week": "weekdays", "weekend": "weekends"}
 
