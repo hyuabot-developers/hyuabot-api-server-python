@@ -6,6 +6,7 @@ from app.hyuabot.api import AppContext
 from app.hyuabot.api.main import app
 from app.hyuabot.api.initialize_data import initialize_data
 from app.hyuabot.api.core.config import AppSettings
+from app.hyuabot.api.utlis.fastapi import get_db_session
 
 from . import get_database_session
 
@@ -20,7 +21,7 @@ async def test_bus_arrival():
     db_session = get_database_session(app_settings)
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
         await initialize_data(db_session)
-
+        app.dependency_overrides[get_db_session] = db_session
         response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival")
         response_json = response.json()
 
