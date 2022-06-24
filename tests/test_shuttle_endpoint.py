@@ -66,25 +66,24 @@ async def test_shuttle_location():
 async def test_shuttle_arrival_list_in_a_row():
     app_settings = AppSettings()
     async with AsyncClient(app=create_app(app_settings), base_url="http://test") as app_client:
-        for shuttle_stop in shuttle_stop_type:
-            url = f"{app_settings.API_V1_STR}/shuttle/arrival"
-            response = await app_client.get(url)
-            response_json = response.json()
+        url = f"{app_settings.API_V1_STR}/shuttle/arrival"
+        response = await app_client.get(url)
+        response_json = response.json()
 
-            assert response.status_code == 200
-            assert "arrivalList" in response_json.keys() and type(response_json["arrivalList"]) == list
-            for stop_item in response_json["arrivalList"]:
-                assert "stopName" in stop_item.keys() and type(stop_item["stopName"]) == str
-                assert "busForStation" in stop_item.keys() and type(
-                    stop_item["busForStation"]) == list
-                for shuttle_item in stop_item["busForStation"]:
-                    assert "time" in shuttle_item.keys() and type(shuttle_item["time"]) == str
-                    assert "type" in shuttle_item.keys() and type(shuttle_item["type"]) == str
-                assert "busForTerminal" in stop_item.keys() and type(
-                    stop_item["busForTerminal"]) == list
-                for shuttle_item in stop_item["busForTerminal"]:
-                    assert "time" in shuttle_item.keys() and type(shuttle_item["time"]) == str
-                    assert "type" in shuttle_item.keys() and type(shuttle_item["type"]) == str
+        assert response.status_code == 200
+        assert "arrivalList" in response_json.keys() and type(response_json["arrivalList"]) == list
+        for stop_item in response_json["arrivalList"]:
+            assert "stopName" in stop_item.keys() and type(stop_item["stopName"]) == str
+            assert "busForStation" in stop_item.keys() and type(
+                stop_item["busForStation"]) == list
+            for shuttle_item in stop_item["busForStation"]:
+                assert "time" in shuttle_item.keys() and type(shuttle_item["time"]) == str
+                assert "type" in shuttle_item.keys() and type(shuttle_item["type"]) == str
+            assert "busForTerminal" in stop_item.keys() and type(
+                stop_item["busForTerminal"]) == list
+            for shuttle_item in stop_item["busForTerminal"]:
+                assert "time" in shuttle_item.keys() and type(shuttle_item["time"]) == str
+                assert "type" in shuttle_item.keys() and type(shuttle_item["type"]) == str
 
 
 @pytest.mark.asyncio

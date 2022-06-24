@@ -1,6 +1,8 @@
 import pytest as pytest
 from httpx import AsyncClient
+from sqlalchemy.orm import Session
 
+from app.hyuabot.api import AppContext
 from app.hyuabot.api.main import app
 from app.hyuabot.api.initialize_data import initialize_data
 from app.hyuabot.api.core.config import AppSettings
@@ -12,8 +14,9 @@ campus_keys = ["erica"]
 @pytest.mark.asyncio
 async def test_subway_arrival():
     app_settings = AppSettings()
-    await initialize_data()
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
+        db_session = Session(AppContext.from_app(app).db_engine)
+        await initialize_data(db_session)
         for campus_key in campus_keys:
             response = await client.get(f"{app_settings.API_V1_STR}/subway/arrival/{campus_key}")
             response_json = response.json()
