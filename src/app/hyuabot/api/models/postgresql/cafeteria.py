@@ -16,7 +16,7 @@ class Menu(BaseModel):
     __table_args__ = (
         PrimaryKeyConstraint('cafeteria_id', 'time_type', 'menu_description'),
     )
-    cafeteria_id = Column(sqltypes.String, ForeignKey('cafeteria.cafeteria_id'), primary_key=True)
+    cafeteria_id = Column(sqltypes.String, ForeignKey('cafeteria.cafeteria_id'))
     time_type = Column(sqltypes.String)
     menu_description = Column(sqltypes.String)
     menu_price = Column(sqltypes.String)
