@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy import Column, PrimaryKeyConstraint
 from sqlalchemy.sql import sqltypes
 
 from app.hyuabot.api.models.postgresql import BaseModel
@@ -22,4 +22,3 @@ class ShuttleTimetable(BaseModel):
     shuttle_type = Column(sqltypes.String, primary_key=True)
     shuttle_time = Column(sqltypes.Time, primary_key=True)
     start_stop = Column(sqltypes.String, primary_key=True)
-

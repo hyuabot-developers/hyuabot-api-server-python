@@ -1,5 +1,3 @@
-import json
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
@@ -24,5 +22,5 @@ async def fetch_menu_by_cafeteria_id(cafeteria_id: str, db_session: Session = De
     return CafeteriaItem(
             name=cafeteria_item.cafeteria_name,
             workingTime="",
-            menuList=convert_menu_item(menu_items)
-        )
+            menuList=convert_menu_item(menu_items),
+    )

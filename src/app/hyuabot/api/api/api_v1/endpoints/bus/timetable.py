@@ -22,24 +22,24 @@ async def fetch_bus_timetable(route_id: str, db_session: Session = Depends(get_d
             list(
                 filter(
                     lambda x: x.route_id == route_item.gbis_id and x.weekday == "weekdays",
-                    timetable_items
-                )
-            )
+                    timetable_items,
+                ),
+            ),
         ),
         saturday=convert_bus_timetable_item(
             list(
                 filter(
                     lambda x: x.route_id == route_item.gbis_id and x.weekday == "saturday",
-                    timetable_items
-                )
-            )
+                    timetable_items,
+                ),
+            ),
         ),
         sunday=convert_bus_timetable_item(
             list(
                 filter(
                     lambda x: x.route_id == route_item.gbis_id and x.weekday == "sunday",
-                    timetable_items
-                )
+                    timetable_items,
+                ),
             ),
         ),
     )

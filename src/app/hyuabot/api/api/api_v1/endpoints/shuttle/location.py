@@ -33,7 +33,7 @@ async def fetch_shuttle_location_each_type(
             db.ShuttleTimetable.shuttle_type == shuttle_type,
             db.ShuttleTimetable.period == current_term,
             db.ShuttleTimetable.weekday == weekdays_keys,
-        )
+        ),
     ).all()
     shuttle_departure_list: list[ShuttleListItem] = []
     now = datetime.now(tz=korea_standard_time)

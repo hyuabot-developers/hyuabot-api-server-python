@@ -87,8 +87,3 @@ async def fetch_bus_realtime(db_session: Session, stop_id: int, route_id: int, b
     db_session.add_all(arrival_list)
     db_session.commit()
     return arrival_list
-
-
-async def fetch_bus_timetable_redis(route_id: str, day_key: str) -> list:
-    timetable = []
-    return timetable

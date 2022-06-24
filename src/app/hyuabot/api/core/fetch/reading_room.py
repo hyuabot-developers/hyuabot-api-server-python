@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.models.postgresql.campus import Campus
 from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 from app.hyuabot.api.utlis.fastapi import get_db_session
 
@@ -25,10 +24,9 @@ async def fetch_reading_room(db_session: Session = Depends(get_db_session)) -> J
     return JSONResponse({"message": "Fetch reading room data success"}, status_code=200)
 
 
-async def fetch_reading_room_api(db_session: Session) -> list[dict]:
-    url = f"https://lib.hanyang.ac.kr/smufu-api/pc/0/rooms-at-seat"
+async def fetch_reading_room_api(db_session: Session) -> None:
+    url = "https://lib.hanyang.ac.kr/smufu-api/pc/0/rooms-at-seat"
 
-    reading_room_result = []
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             response_json = await response.json()
@@ -45,4 +43,3 @@ async def fetch_reading_room_api(db_session: Session) -> list[dict]:
                         "available_seat": reading_room_result_item["available"],
                     })
     db_session.commit()
-    return reading_room_result

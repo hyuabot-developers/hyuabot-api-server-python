@@ -1,5 +1,4 @@
 import asyncio
-import json
 
 import aiohttp
 from fastapi import APIRouter, Depends
@@ -7,7 +6,6 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.hyuabot.api.core.config import AppSettings
-# from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
 from app.hyuabot.api.models.postgresql.subway import SubwayRealtime
 from app.hyuabot.api.utlis.fastapi import get_db_session
 

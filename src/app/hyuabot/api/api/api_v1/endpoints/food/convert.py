@@ -3,9 +3,10 @@ from app.hyuabot.api.schemas.cafeteria import MenuItem
 
 
 def convert_menu_item(menu_items: list[db.Menu]) -> dict[str, list[MenuItem]]:
-    menu_dict = {}
+    menu_dict: dict[str, list[MenuItem]] = {}
     for menu_item in menu_items:
         if menu_item.time_type not in menu_dict:
             menu_dict[menu_item.time_type] = []
-        menu_dict[menu_item.time_type].append(MenuItem(menu_item.menu_description, menu_item.price))
+        menu_dict[menu_item.time_type].append(
+            MenuItem(name=menu_item.menu_description, price=menu_item.price))
     return menu_dict

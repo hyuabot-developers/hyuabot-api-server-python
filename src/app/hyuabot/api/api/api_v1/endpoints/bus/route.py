@@ -31,35 +31,35 @@ async def fetch_bus_information(
                 terminalStop=route_item.terminal_stop,
                 timeFromStartStop=route_item.time_from_start_stop,
                 realtime=convert_bus_realtime_item(
-                    list(filter(lambda x: x.route_id == route_item.gbis_id, realtime_items))
+                    list(filter(lambda x: x.route_id == route_item.gbis_id, realtime_items)),
                 ),
                 timetable=BusTimetable(
                     weekdays=convert_bus_timetable_item(
                         list(
                             filter(
                                 lambda x: x.route_id == route_item.gbis_id and x.weekday == "weekdays",
-                                timetable_items
-                            )
-                        )
+                                timetable_items,
+                            ),
+                        ),
                     ),
                     saturday=convert_bus_timetable_item(
                         list(
                             filter(
                                 lambda x: x.route_id == route_item.gbis_id and x.weekday == "saturday",
-                                timetable_items
-                            )
-                        )
+                                timetable_items,
+                            ),
+                        ),
                     ),
                     sunday=convert_bus_timetable_item(
                         list(
                             filter(
                                 lambda x: x.route_id == route_item.gbis_id and x.weekday == "sunday",
-                                timetable_items
-                            )
-                        )
+                                timetable_items,
+                            ),
+                        ),
                     ),
-                )
-            )
+                ),
+            ),
         )
 
     return BusStopInformationResponse(departureInfoList=departure_items)
@@ -85,32 +85,32 @@ async def fetch_bus_information_by_route(
         terminalStop=route_item.terminal_stop,
         timeFromStartStop=route_item.time_from_start_stop,
         realtime=convert_bus_realtime_item(
-            list(filter(lambda x: x.route_id == route_item.gbis_id, realtime_items))
+            list(filter(lambda x: x.route_id == route_item.gbis_id, realtime_items)),
         ),
         timetable=BusTimetable(
             weekdays=convert_bus_timetable_item(
                 list(
                     filter(
                         lambda x: x.route_id == route_item.gbis_id and x.weekday == "weekdays",
-                        timetable_items
-                    )
-                )
+                        timetable_items,
+                    ),
+                ),
             )[:timetable_count],
             saturday=convert_bus_timetable_item(
                 list(
                     filter(
                         lambda x: x.route_id == route_item.gbis_id and x.weekday == "saturday",
-                        timetable_items
-                    )
-                )
+                        timetable_items,
+                    ),
+                ),
             )[:timetable_count],
             sunday=convert_bus_timetable_item(
                 list(
                     filter(
                         lambda x: x.route_id == route_item.gbis_id and x.weekday == "sunday",
-                        timetable_items
-                    )
+                        timetable_items,
+                    ),
                 )[:timetable_count],
             ),
-        )
+        ),
     )

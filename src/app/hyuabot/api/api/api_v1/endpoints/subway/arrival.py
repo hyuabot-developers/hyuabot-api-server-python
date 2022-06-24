@@ -88,8 +88,8 @@ async def fetch_subway_information(campus_name: str, db_session: Session = Depen
                                 SubwayTimetable.route_name == route_item.route_name,
                                 SubwayTimetable.weekday == weekday_key,
                                 SubwayTimetable.heading == "down")).all()),
-                )
-            )
+                ),
+            ),
         )
     return SubwayDepartureResponse(
         stationName=station_name,

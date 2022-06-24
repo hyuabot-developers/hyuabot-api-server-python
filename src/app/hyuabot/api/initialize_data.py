@@ -154,7 +154,7 @@ async def fetch_shuttle_timetable(db_session: Session, period: str, day: str):
                         shuttle_type=shuttle_type,
                         shuttle_time=shuttle_time,
                         start_stop=shuttle_start_stop,
-                    )
+                    ),
                 )
     db_session.add_all(timetable)
 
@@ -170,7 +170,7 @@ def insert_subway_route_items(db_session: Session):
 
 def insert_subway_station_items(db_session: Session):
     station_list = [
-        SubwayStation(station_name="한대앞")
+        SubwayStation(station_name="한대앞"),
     ]
     db_session.query(SubwayStation).delete()
     db_session.add_all(station_list)
@@ -189,7 +189,8 @@ async def insert_subway_timetable_items(db_session: Session):
             for weekday in weekday_list:
                 for heading in heading_list:
                     tasks.append(
-                        fetch_subway_timetable_items(db_session, station_name, route_name, weekday, heading)
+                        fetch_subway_timetable_items(
+                            db_session, station_name, route_name, weekday, heading),
                     )
     await asyncio.gather(*tasks)
 

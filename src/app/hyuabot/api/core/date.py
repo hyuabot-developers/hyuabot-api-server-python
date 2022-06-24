@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timezone, timedelta
 from typing import Tuple
 
@@ -46,7 +45,7 @@ async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
             date_item >= ShuttlePeriod.start_date,
             date_item <= ShuttlePeriod.end_date,
             ShuttlePeriod.calendar_type == "lunar",
-            ShuttlePeriod.period == "halt",))\
+            ShuttlePeriod.period == "halt"))\
         .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
     if lunar_period_item is not None:
         is_working = False

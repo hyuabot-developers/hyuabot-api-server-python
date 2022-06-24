@@ -1,5 +1,4 @@
 import asyncio
-from typing import Dict, Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -41,8 +40,7 @@ async def fetch_restaurant_menu_by_id(db_session: Session, cafeteria_id: str, re
                     cafeteria_id=cafeteria_id,
                     time_type=title,
                     menu_description=menu,
-                    menu_price=p
+                    menu_price=p,
                 ))
     db_session.add_all(menu_list)
     db_session.commit()
-

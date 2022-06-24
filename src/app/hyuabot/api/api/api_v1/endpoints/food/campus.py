@@ -27,7 +27,7 @@ async def fetch_restaurant_by_campus(campus_name: str, db_session: Session = Dep
         cafeteria_list.append(CafeteriaItem(
             name=cafeteria_item.cafeteria_name,
             workingTime="",
-            menuList=menu_items_cafeteria
+            menuList=menu_items_cafeteria,
         ))
 
     return {"campus": campus_name, "restaurantList": cafeteria_list}
