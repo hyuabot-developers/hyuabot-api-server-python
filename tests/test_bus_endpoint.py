@@ -2,10 +2,12 @@ import pytest as pytest
 from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
-from app.hyuabot.api import AppContext, _web_app_startup
+from app.hyuabot.api import AppContext
 from app.hyuabot.api.main import app
 from app.hyuabot.api.initialize_data import initialize_data
 from app.hyuabot.api.core.config import AppSettings
+
+from . import get_database_session
 
 
 day_keys = ["weekdays", "saturday", "sunday"]
@@ -15,9 +17,8 @@ bus_route_keys = ["10-1", "707-1", "3102"]
 @pytest.mark.asyncio
 async def test_bus_arrival():
     app_settings = AppSettings()
+    db_session = get_database_session(app_settings)
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-        await _web_app_startup(app, app_settings)
-        db_session = Session(AppContext.from_app(app).db_engine)
         await initialize_data(db_session)
 
         response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival")
