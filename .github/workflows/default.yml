@@ -69,6 +69,8 @@ jobs:
     services:
       postgres:
         image: postgres
+        ports:
+          - 5432:5432
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -90,7 +92,6 @@ jobs:
     - name: Install dependencies
       env:
         REQUIREMENTS_FILE: test
-        POSTGRES_HOST: postgres
       run: |
         python -m pip install -U pip setuptools
         python -m pip install -U -r requirements/${REQUIREMENTS_FILE}.txt
