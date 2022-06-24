@@ -18,7 +18,6 @@ async def fetch_restaurant_menu(db_session: Session = Depends(get_db_session)) -
     cafeteria_id_list = db_session.query(Cafeteria.cafeteria_id).distinct().all()
     urls = []
     for (restaurant_url_key,) in cafeteria_id_list:
-        print(f"https://www.hanyang.ac.kr/web/www/re{restaurant_url_key}")
         urls.append(f"https://www.hanyang.ac.kr/web/www/re{restaurant_url_key}")
     responses = [requests.get(u) for u in urls]
     db_session.query(Menu).delete()
@@ -31,7 +30,6 @@ async def fetch_restaurant_menu(db_session: Session = Depends(get_db_session)) -
 
 async def fetch_restaurant_menu_by_id(db_session: Session, cafeteria_id: str, response) -> None:
     menu_list = []
-    print(response)
     soup = BeautifulSoup(response.text, "html.parser")
     for inbox in soup.find_all("div", {"class": "in-box"}):
         title = inbox.find("h4").text.strip()

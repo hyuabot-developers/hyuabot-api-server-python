@@ -1,18 +1,18 @@
 import pytest as pytest
-from httpx import AsyncClient
+from fastapi.testclient import TestClient
 
 
 from app.hyuabot.api.core.config import AppSettings
 from app.hyuabot.api.main import app
 
 
-campus_keys = ["seoul", "erica"]
+campus_keys = ["서울", "ERICA"]
 
 
 @pytest.mark.asyncio
 async def test_fetch_reading_room_information():
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-        response = await client.get("/fetch/library")
+    with TestClient(app=app) as client:
+        response = client.get("/fetch/library")
         response_json = response.json()
         assert response.status_code == 200
         assert "message" in response_json.keys()
@@ -23,8 +23,8 @@ async def test_fetch_reading_room_information():
 async def test_reading_room_by_campus():
     app_settings = AppSettings()
     for campus in campus_keys:
-        async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-            response = await client.get(f"{app_settings.API_V1_STR}/library/{campus}")
+        with TestClient(app=app) as client:
+            response = client.get(f"{app_settings.API_V1_STR}/library/{campus}")
             response_json = response.json()
 
             assert response.status_code == 200

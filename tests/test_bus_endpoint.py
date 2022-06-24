@@ -1,15 +1,10 @@
 import pytest as pytest
-from httpx import AsyncClient
-from sqlalchemy.orm import Session
+from fastapi.testclient import TestClient
 
-from app.hyuabot.api import AppContext
-from app.hyuabot.api.main import app
-from app.hyuabot.api.initialize_data import initialize_data
 from app.hyuabot.api.core.config import AppSettings
-from app.hyuabot.api.utlis.fastapi import get_db_session
-
+from app.hyuabot.api.initialize_data import initialize_data
+from app.hyuabot.api.main import app
 from . import get_database_session
-
 
 day_keys = ["weekdays", "saturday", "sunday"]
 bus_route_keys = ["10-1", "707-1", "3102"]
@@ -19,10 +14,9 @@ bus_route_keys = ["10-1", "707-1", "3102"]
 async def test_bus_arrival():
     app_settings = AppSettings()
     db_session = get_database_session(app_settings)
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-        await initialize_data(db_session)
-        app.dependency_overrides[get_db_session] = db_session
-        response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival")
+    await initialize_data(db_session)
+    with TestClient(app=app) as client:
+        response = client.get(f"{app_settings.API_V1_STR}/bus/arrival")
         response_json = response.json()
 
         assert response.status_code == 200
@@ -31,28 +25,28 @@ async def test_bus_arrival():
 
         for departure_info_item in response_json["departureInfoList"]:
             assert "message" in departure_info_item.keys() and \
-                type(departure_info_item["message"]) == str
+                   type(departure_info_item["message"]) == str
             assert "name" in departure_info_item.keys() and \
-                type(departure_info_item["name"]) == str
+                   type(departure_info_item["name"]) == str
             assert "busStop" in departure_info_item.keys() and \
-                type(departure_info_item["busStop"]) == str
+                   type(departure_info_item["busStop"]) == str
             assert "realtime" in departure_info_item.keys() and \
-                type(departure_info_item["realtime"]) == list
+                   type(departure_info_item["realtime"]) == list
             if departure_info_item["realtime"]:
                 for realtime_item in departure_info_item["realtime"]:
                     assert "location" in realtime_item.keys() and \
-                        type(realtime_item["location"]) == int
+                           type(realtime_item["location"]) == int
                     assert "lowPlate" in realtime_item.keys() and \
-                        type(realtime_item["lowPlate"]) == int
+                           type(realtime_item["lowPlate"]) == int
                     assert "remainedTime" in realtime_item.keys() and \
-                        type(realtime_item["remainedTime"]) == int
+                           type(realtime_item["remainedTime"]) == int
                     assert "remainedSeat" in realtime_item.keys() and \
-                        type(realtime_item["remainedSeat"]) == int
+                           type(realtime_item["remainedSeat"]) == int
             assert "timetable" in departure_info_item.keys() and \
-                type(departure_info_item["timetable"]) == dict
+                   type(departure_info_item["timetable"]) == dict
             for day_key_item in day_keys:
                 assert day_key_item in departure_info_item["timetable"].keys() and \
-                    type(departure_info_item["timetable"][day_key_item]) == list
+                       type(departure_info_item["timetable"][day_key_item]) == list
                 for timetable_item in departure_info_item["timetable"][day_key_item]:
                     assert len(timetable_item.split(":")) == 3
                     hour, minute, second = timetable_item.split(":")
@@ -65,12 +59,12 @@ async def test_bus_arrival():
 @pytest.mark.asyncio
 async def test_bus_arrival_by_route():
     app_settings = AppSettings()
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-        db_session = Session(AppContext.from_app(app).db_engine)
-        await initialize_data(db_session)
+    db_session = get_database_session(app_settings)
+    await initialize_data(db_session)
+    with TestClient(app=app) as client:
         for bus_route in bus_route_keys:
-            response = await client.get(f"{app_settings.API_V1_STR}/bus/arrival/route/{bus_route}",
-                                        params={"count": 2})
+            response = client.get(f"{app_settings.API_V1_STR}/bus/arrival/route/{bus_route}",
+                                  params={"count": 2})
             response_json = response.json()
 
             assert response.status_code == 200
@@ -110,12 +104,12 @@ async def test_bus_arrival_by_route():
 @pytest.mark.asyncio
 async def test_bus_timetable():
     app_settings = AppSettings()
-    async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-        db_session = Session(AppContext.from_app(app).db_engine)
-        await initialize_data(db_session)
+    db_session = get_database_session(app_settings)
+    await initialize_data(db_session)
+    with TestClient(app=app) as client:
         for bus_route in bus_route_keys:
-            response = await client.get(f"{app_settings.API_V1_STR}/bus/timetable/{bus_route}",
-                                        params={"count": 2})
+            response = client.get(f"{app_settings.API_V1_STR}/bus/timetable/{bus_route}",
+                                  params={"count": 2})
             response_json = response.json()
             for day_key_item in day_keys:
                 assert day_key_item in response_json.keys() and \

@@ -1,22 +1,26 @@
-import json
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
-from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
-from app.hyuabot.api.schemas.shuttle import ShuttleListResponse, ShuttleListItem
 from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type
+from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
+from app.hyuabot.api.models.postgresql import shuttle as db
+from app.hyuabot.api.schemas.shuttle import ShuttleListResponse, ShuttleListItem
+from app.hyuabot.api.utlis.fastapi import get_db_session
 
 location_router = APIRouter(prefix="/location")
 
 
 @location_router.get("/{shuttle_type}", status_code=200, response_model=ShuttleListResponse)
-async def fetch_shuttle_location_each_type(shuttle_type: str):
+async def fetch_shuttle_location_each_type(
+        shuttle_type: str, db_session: Session = Depends(get_db_session)):
     if shuttle_type not in shuttle_line_type:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 셔틀버스 종류입니다."})
 
-    is_working, current_term, weekdays_keys, query_time = await get_shuttle_term()
+    is_working, current_term, weekdays_keys, query_time = await get_shuttle_term(db_session)
     if not is_working:
         return JSONResponse(content={
             "message": "당일은 셔틀을 운행하지 않습니다.",
@@ -24,18 +28,19 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
         })
 
     now = datetime.now(tz=korea_standard_time)
-    # redis_connection = await get_redis_connection("shuttle")
-    # key = f"shuttle_{current_term}_{weekdays_keys}"
-    # json_string: bytes = await get_redis_value(redis_connection, key)
-    # timetable: list[dict] = [shuttle_item
-    #                          for shuttle_item in json.loads(json_string.decode("utf-8"))
-    #                          if shuttle_item["type"] == shuttle_type]
-    timetable = []
+    timetable = db_session.query(db.ShuttleTimetable).filter(
+        and_(
+            db.ShuttleTimetable.shuttle_type == shuttle_type,
+            db.ShuttleTimetable.period == current_term,
+            db.ShuttleTimetable.weekday == weekdays_keys,
+        )
+    ).all()
     shuttle_departure_list: list[ShuttleListItem] = []
+    now = datetime.now(tz=korea_standard_time)
     if shuttle_type == "DH" or shuttle_type == "DY":
-        for shuttle_index, shuttle_time in enumerate(timetable):
-            shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M").replace(
-                year=now.year, month=now.month, day=now.day, tzinfo=korea_standard_time)
+        for shuttle_index, shuttle_item in enumerate(timetable):
+            shuttle_departure_time = now.replace(
+                hour=shuttle_item.shuttle_time.hour, minute=shuttle_item.shuttle_time.minute)
             if now - timedelta(minutes=30) <= shuttle_departure_time <= now:
                 last_bus = False
                 if shuttle_departure_time <= now - timedelta(minutes=25):
@@ -61,9 +66,9 @@ async def fetch_shuttle_location_each_type(shuttle_type: str):
             elif shuttle_departure_time > now:
                 break
     else:
-        for shuttle_index, shuttle_time in enumerate(timetable):
-            shuttle_departure_time = datetime.strptime(shuttle_time["time"], "%H:%M").replace(
-                year=now.year, month=now.month, day=now.day, tzinfo=korea_standard_time)
+        for shuttle_index, shuttle_item in enumerate(timetable):
+            shuttle_departure_time = now.replace(
+                hour=shuttle_item.shuttle_time.hour, minute=shuttle_item.shuttle_time.minute)
             if now - timedelta(minutes=35) <= shuttle_departure_time <= now:
                 last_bus = False
                 if shuttle_departure_time <= now - timedelta(minutes=30):
