@@ -1,12 +1,13 @@
 import asyncio
-import json
 
 import aiohttp
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
 from app.hyuabot.api.core.config import AppSettings
-from app.hyuabot.api.core.database import get_redis_connection, set_redis_value
+from app.hyuabot.api.models.postgresql.subway import SubwayRealtime
+from app.hyuabot.api.utlis.fastapi import get_db_session
 
 status_code_dict = {0: "진입", 1: "도착"}
 line_code_dict = {"2호선": 1002, "4호선": 1004, "수인분당선": 1075}
@@ -34,23 +35,27 @@ fetch_subway_router = APIRouter(prefix="/subway")
 
 
 @fetch_subway_router.get("", status_code=200)
-async def fetch_subway_realtime_information() -> JSONResponse:
+async def fetch_subway_realtime_information(db_session: Session = Depends(get_db_session)) \
+        -> JSONResponse:
+    db_session.query(SubwayRealtime).delete()
     tasks = [
         # get_subway_realtime_information("2호선"),
-        get_subway_realtime_information("4호선"),
-        get_subway_realtime_information("수인분당선"),
+        get_subway_realtime_information(db_session, "4호선", "한대앞"),
+        get_subway_realtime_information(db_session, "수인분당선", "한대앞"),
     ]
     await asyncio.gather(*tasks)
+    db_session.commit()
     return JSONResponse({"message": "Fetch subway data success"}, status_code=200)
 
 
-async def get_subway_realtime_information(line_name: str) -> None:
+async def get_subway_realtime_information(db_session: Session, route_name: str, station_name: str) \
+        -> None:
     app_settings = AppSettings()
     url = f"http://swopenapi.seoul.go.kr/api/subway/{app_settings.METRO_API_KEY}/json/" \
-          f"realtimePosition/0/60/{line_name}"
+          f"realtimePosition/0/60/{route_name}"
     timeout = aiohttp.ClientTimeout(total=3.0)
+    arrival_list: list[SubwayRealtime] = []
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        arrival_list: dict = {"up": [], "down": []}
         async with session.get(url) as response:
             response_json = await response.json()
             if "realtimePositionList" in response_json.keys():
@@ -64,9 +69,9 @@ async def get_subway_realtime_information(line_name: str) -> None:
                     status_code = realtime_position_item["trainSttus"]
                     is_express_train = realtime_position_item["directAt"]
                     is_last_train = realtime_position_item["lstcarAt"]
-                    if line_name == "2호선":
+                    if route_name == "2호선":
                         pass
-                    elif line_name == "4호선":
+                    elif route_name == "4호선":
                         if is_express_train == "1":
                             continue
                         elif heading == "0" and \
@@ -77,7 +82,7 @@ async def get_subway_realtime_information(line_name: str) -> None:
                                 (terminal_station not in ["오이도", "안산"] or
                                  current_station not in list(minute_to_arrival.keys())[:40]):
                             continue
-                    elif line_name == "수인분당선":
+                    elif route_name == "수인분당선":
                         if is_express_train == "1":
                             continue
                         elif heading == "0" and \
@@ -88,28 +93,19 @@ async def get_subway_realtime_information(line_name: str) -> None:
                                 (terminal_station not in ["오이도", "인천"] or
                                  current_station not in list(minute_to_arrival.keys())[60:]):
                             continue
-                    if any([x["trainNumber"] == train_number for x in
-                            arrival_list[heading.replace("0", "up").replace("1", "down")]]):
-                        continue
-                    subway_item = {
-                        "trainNumber": train_number,
-                        "updateTime": update_time,
-                        "isLastTrain": is_last_train,
-                        "terminalStation": terminal_station,
-                        "currentStation": current_station,
-                        "statusCode": status_code_dict[int(status_code)] if
-                        int(status_code) in status_code_dict.keys() else "출발",
-                        "remainedTime": minute_to_arrival[current_station]
+                    subway_item = SubwayRealtime(
+                        route_name=route_name,
+                        station_name=station_name,
+                        heading=heading.replace("0", "up").replace("1", "down"),
+                        update_time=update_time,
+                        train_number=train_number,
+                        last_train=bool(int(is_last_train)),
+                        terminal_station=terminal_station,
+                        current_station=current_station,
+                        remained_time=minute_to_arrival[current_station]
                         if current_station in minute_to_arrival.keys() else 0,
-                    }
-
-                    arrival_list[heading.replace("0", "up").replace("1", "down")].append(subway_item)
-
-                redis_connection = await get_redis_connection("subway")
-                arrival_list["up"] = sorted(arrival_list["up"], key=lambda x: x["remainedTime"])
-                arrival_list["down"] = sorted(arrival_list["down"], key=lambda x: x["remainedTime"])
-                await set_redis_value(redis_connection,
-                                      f"subway_{line_code_dict[line_name]}_position",
-                                      json.dumps(
-                                          arrival_list, ensure_ascii=False).encode("utf-8"))
-                await redis_connection.close()
+                        status=status_code_dict[int(status_code)]
+                        if int(status_code) in status_code_dict.keys() else "출발",
+                    )
+                    arrival_list.append(subway_item)
+    db_session.add_all(arrival_list)

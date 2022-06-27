@@ -1,22 +1,22 @@
 import pytest as pytest
-from httpx import AsyncClient
+from fastapi.testclient import TestClient
 
 from app.hyuabot.api.core.config import AppSettings
 from app.hyuabot.api.main import app
 
-campus_keys = ["seoul", "erica"]
+campus_keys = ["서울", "ERICA"]
 restaurant_keys = {
-    "student_seoul": "학생식당",
-    "life_science_seoul": "생활과학관 식당",
-    "material_science_seoul": "신소재공학관 식당",
-    "dorm_seoul_1": "제1생활관 식당",
-    "dorm_seoul_2": "제2생활관 식당",
-    "hangwon_seoul": "행원파크",
-    "teacher_erica": "교직원식당",
-    "student_erica": "학생식당",
-    "dorm_erica": "창의인재원식당",
-    "food_court_erica": "푸드코트",
-    "changbo_erica": "창업보육센터",
+    "1": "학생식당",
+    "2": "생활과학관 식당",
+    "4": "신소재공학관 식당",
+    "6": "제1생활관식당",
+    "7": "제2생활관식당",
+    "8": "행원파크",
+    "11": "교직원식당",
+    "12": "학생식당",
+    "13": "창의인재원식당",
+    "14": "푸드코트",
+    "15": "창업보육센터",
 }
 
 
@@ -25,8 +25,8 @@ async def test_restaurant_menu_by_campus():
     app_settings = AppSettings()
 
     for campus_key in campus_keys:
-        async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-            response = await client.get(f"{app_settings.API_V1_STR}/food/campus/{campus_key}")
+        with TestClient(app=app) as client:
+            response = client.get(f"{app_settings.API_V1_STR}/food/campus/{campus_key}")
             response_json = response.json()
 
             assert response.status_code == 200
@@ -48,8 +48,8 @@ async def test_restaurant_menu():
     app_settings = AppSettings()
 
     for restaurant_key, restaurant_name in restaurant_keys.items():
-        async with AsyncClient(app=app, base_url="http://127.0.0.1:8000") as client:
-            response = await client.get(f"{app_settings.API_V1_STR}/food/restaurant/{restaurant_key}")
+        with TestClient(app=app) as client:
+            response = client.get(f"{app_settings.API_V1_STR}/food/restaurant/{restaurant_key}")
             response_json = response.json()
 
             assert response.status_code == 200

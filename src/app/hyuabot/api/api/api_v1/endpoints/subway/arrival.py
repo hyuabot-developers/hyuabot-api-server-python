@@ -1,96 +1,97 @@
-import asyncio
-import datetime
-import json
+from datetime import datetime
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
-from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
+from app.hyuabot.api.core.date import korea_standard_time
+from app.hyuabot.api.models.postgresql.subway import SubwayRoute, SubwayTimetable, SubwayRealtime
 from app.hyuabot.api.schemas.subway import \
-    SubwayDepartureResponse, SubwayDepartureByLine, SubwayTimetableList
+    SubwayDepartureResponse, SubwayDepartureByLine, SubwayTimetableItem, SubwayRealtimeItem, \
+    SubwayRealtimeList, SubwayTimetableList
+from app.hyuabot.api.utlis.fastapi import get_db_session
 
 arrival_router = APIRouter(prefix="/arrival")
 
 
-async def fetch_subway_timetable(line_id: str) -> dict:
-    _, _, weekday_key, _ = await get_shuttle_term()
-
-    tasks = [
-        fetch_subway_timetable_redis(line_id, weekday_key, "up"),
-        fetch_subway_timetable_redis(line_id, weekday_key, "down"),
-    ]
-    [timetable_up, timetable_down] = await asyncio.gather(*tasks)
-    return {"up": timetable_up, "down": timetable_down}
-
-
-async def fetch_subway_timetable_redis(line_id: str, day: str, heading: str) -> list[dict]:
-    now = datetime.datetime.now(tz=korea_standard_time)
-
-    redis_connection = await get_redis_connection("subway")
-    json_string = await get_redis_value(redis_connection, f"subway_{line_id}_{day}_{heading}")
-    timetable: list[dict] = json.loads(json_string.decode("utf-8"))
-    timetable_after = []
-
-    for item in timetable:
-        item_time = datetime.datetime.strptime(item["departureTime"], "%H:%M:%S").replace(
-            year=now.year, month=now.month, day=now.day, tzinfo=korea_standard_time,
-        )
-        if item_time.hour < 4:
-            item_time += datetime.timedelta(days=1)
-        timetable_after.append(item)
-    await redis_connection.close()
-    return timetable_after
+def convert_subway_timetable_items(
+        timetable_items: list[SubwayTimetable], after: bool = True) -> list[SubwayTimetableItem]:
+    if after:
+        now = datetime.now(tz=korea_standard_time)
+        return [
+            SubwayTimetableItem(
+                departureTime=str(timetable_item.departure_time),
+                terminalStation=timetable_item.terminal_station,
+            )
+            for timetable_item in timetable_items
+            if timetable_item.departure_time.hour < 5 or timetable_item.departure_time > now.time()]
+    return [
+        SubwayTimetableItem(
+            departureTime=str(timetable_item.departure_time),
+            terminalStation=timetable_item.terminal_station,
+        ) for timetable_item in timetable_items]
 
 
-async def fetch_subway_realtime_redis(line_id: str) -> tuple[str, dict]:
-    redis_connection = await get_redis_connection("subway")
-    arrival_list_string = \
-        await get_redis_value(redis_connection, f"subway_{line_id}_position")
-
-    arrival_list = json.loads(arrival_list_string.decode("utf-8"))
-    await redis_connection.close()
-    return arrival_list
+def convert_subway_realtime_items(realtime_items: list[SubwayRealtime]) -> list[SubwayRealtimeItem]:
+    return [
+        SubwayRealtimeItem(
+            trainNumber=realtime_item.train_number,
+            updateTime=realtime_item.update_time,
+            isLastTrain=realtime_item.last_train,
+            terminalStation=realtime_item.terminal_station,
+            currentStation=realtime_item.current_station,
+            remainedTime=realtime_item.remained_time,
+            status=realtime_item.status,
+        ) for realtime_item in realtime_items]
 
 
 @arrival_router.get("/{campus_name}", status_code=200, response_model=SubwayDepartureResponse)
-async def fetch_subway_information(campus_name: str):
-    subway_dict = {
-        # "seoul": [("한양대", "1002")],
-        "erica": [("한대앞", "1004"), ("한대앞", "1075")],
-    }
-
-    if campus_name not in subway_dict:
+async def fetch_subway_information(campus_name: str, db_session: Session = Depends(get_db_session)):
+    campus_station_dict = {"ERICA": "한대앞"}
+    if campus_name.upper() not in campus_station_dict.keys():
         raise HTTPException(status_code=404, detail="Campus name is invalid")
+    station_name = campus_station_dict[campus_name.upper()]
+    route_list = db_session.query(SubwayRoute).all()
+    departure_list = []
+    now = datetime.now(tz=korea_standard_time)
+    if now.weekday() == 5 or now.weekday() == 6:
+        weekday_key = "weekends"
+    else:
+        weekday_key = "weekdays"
 
-    tasks = []
-    for station_name, line_id in subway_dict[campus_name]:
-        tasks.append(fetch_subway_realtime_redis(line_id))
-
-    if campus_name == "seoul":
-        main_line_arrival = await asyncio.gather(*tasks)
-        return SubwayDepartureResponse(
-            stationName=subway_dict[campus_name][0][0],
-            departureList=[
-                SubwayDepartureByLine(
-                    lineName="2호선",
-                    realtime=main_line_arrival,
-                    timetable=SubwayTimetableList(up=[], down=[]),
+    for route_item in route_list:
+        departure_list.append(
+            SubwayDepartureByLine(
+                lineName=route_item.route_name,
+                realtime=SubwayRealtimeList(
+                    up=convert_subway_realtime_items(
+                        db_session.query(SubwayRealtime).filter(
+                            and_(
+                                SubwayRealtime.route_name == route_item.route_name,
+                                SubwayRealtime.heading == "up")).all()),
+                    down=convert_subway_realtime_items(
+                        db_session.query(SubwayRealtime).filter(
+                            and_(
+                                SubwayRealtime.route_name == route_item.route_name,
+                                SubwayRealtime.heading == "down")).all()),
                 ),
-            ],
+                timetable=SubwayTimetableList(
+                    up=convert_subway_timetable_items(
+                        db_session.query(SubwayTimetable).filter(
+                            and_(
+                                SubwayTimetable.route_name == route_item.route_name,
+                                SubwayTimetable.weekday == weekday_key,
+                                SubwayTimetable.heading == "up")).all()),
+                    down=convert_subway_timetable_items(
+                        db_session.query(SubwayTimetable).filter(
+                            and_(
+                                SubwayTimetable.route_name == route_item.route_name,
+                                SubwayTimetable.weekday == weekday_key,
+                                SubwayTimetable.heading == "down")).all()),
+                ),
+            ),
         )
-    [main_line_arrival, sub_line_arrival] = await asyncio.gather(*tasks)
     return SubwayDepartureResponse(
-        stationName=subway_dict[campus_name][0][0],
-        departureList=[
-            SubwayDepartureByLine(
-                lineName="4호선",
-                realtime=main_line_arrival,
-                timetable=await fetch_subway_timetable("1004"),
-            ),
-            SubwayDepartureByLine(
-                lineName="수인분당선",
-                realtime=sub_line_arrival,
-                timetable=await fetch_subway_timetable("1075"),
-            ),
-        ],
+        stationName=station_name,
+        departureList=departure_list,
     )

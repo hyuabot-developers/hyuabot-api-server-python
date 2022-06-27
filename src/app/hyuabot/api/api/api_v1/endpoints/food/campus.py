@@ -1,42 +1,33 @@
-import json
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
-from fastapi import APIRouter
-
-from app.hyuabot.api.core.database import get_redis_connection, get_redis_value
-from app.hyuabot.api.schemas.cafeteria import CampusItem
-
-restaurant_id_dict = {
-    "seoul": {
-        "student_seoul": "학생식당",
-        "life_science_seoul": "생활과학관 식당",
-        "material_science_seoul": "신소재공학관 식당",
-        "dorm_seoul_1": "제1생활관 식당",
-        "dorm_seoul_2": "제2생활관 식당",
-        "hangwon_seoul": "행원파크",
-    },
-    "erica": {
-        "teacher_erica": "교직원식당",
-        "student_erica": "학생식당",
-        "dorm_erica": "창의인재원식당",
-        "food_court_erica": "푸드코트",
-        "changbo_erica": "창업보육센터",
-    },
-}
+from app.hyuabot.api.api.api_v1.endpoints.food.convert import convert_menu_item
+from app.hyuabot.api.models.postgresql.cafeteria import Cafeteria, Menu
+from app.hyuabot.api.models.postgresql.campus import Campus
+from app.hyuabot.api.schemas.cafeteria import CampusItem, CafeteriaItem
+from app.hyuabot.api.utlis.fastapi import get_db_session
 
 restaurant_menu_campus_router = APIRouter(prefix="/campus")
 
 
 @restaurant_menu_campus_router.get("/{campus_name}", status_code=200,
                                    response_model=CampusItem, tags=["Restaurant Menu By campus"])
-async def fetch_restaurant_by_campus(campus_name: str):
-    redis_connection = await get_redis_connection("restaurant")
-    restaurant_list = []
-    for restaurant_id, restaurant_name in restaurant_id_dict[campus_name].items():
-        json_string = await get_redis_value(redis_connection, restaurant_id)
-        restaurant_item = json.loads(json_string.decode("utf-8"))
-        restaurant_list.append({
-            "name": restaurant_name, "workingTime": restaurant_item["time"],
-            "menuList": restaurant_item["menu"],
-        })
-    await redis_connection.close()
-    return {"campus": campus_name, "restaurantList": restaurant_list}
+async def fetch_restaurant_by_campus(campus_name: str, db_session: Session = Depends(get_db_session)):
+    campus_item = db_session.query(Campus).filter(Campus.campus_name == campus_name).one_or_none()
+    if campus_item is None:
+        return JSONResponse(status_code=404, content={"message": "존재하지 않는 캠퍼스입니다."})
+    cafeteria_items: list[Cafeteria] = db_session.query(Cafeteria)\
+        .filter(Cafeteria.campus_id == campus_item.campus_id).all()
+    menu_items: list[Menu] = db_session.query(Menu).all()
+    cafeteria_list = []
+    for cafeteria_item in cafeteria_items:
+        menu_items_cafeteria = convert_menu_item(
+            list(filter(lambda x: x.cafeteria_id == cafeteria_item.cafeteria_id, menu_items)))
+        cafeteria_list.append(CafeteriaItem(
+            name=cafeteria_item.cafeteria_name,
+            workingTime="",
+            menuList=menu_items_cafeteria,
+        ))
+
+    return {"campus": campus_name, "restaurantList": cafeteria_list}
