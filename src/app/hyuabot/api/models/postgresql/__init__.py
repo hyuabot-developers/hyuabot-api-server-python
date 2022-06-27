@@ -1,7 +1,7 @@
 from sqlalchemy import Table, MetaData
 from sqlalchemy.orm import declarative_base
-
-ModelMeta = declarative_base()  # type: ignore
+# type: ignore
+ModelMeta = declarative_base()
 
 
 class BaseModel(ModelMeta):
