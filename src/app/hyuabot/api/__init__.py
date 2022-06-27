@@ -9,7 +9,7 @@ from sqlalchemy_utils import database_exists, create_database, drop_database
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from .api.api_v1 import API_V1_ROUTERS
+from .api.v1 import API_V1_ROUTERS
 from .context import AppContext
 from .core.config import AppSettings
 from .core.fetch import fetch_router

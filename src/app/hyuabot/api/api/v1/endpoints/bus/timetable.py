@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app.hyuabot.api.api.api_v1.endpoints.bus import convert_bus_timetable_item
+from app.hyuabot.api.api.v1.endpoints.bus import convert_bus_timetable_item
 from app.hyuabot.api.models.postgresql import bus as db
 from app.hyuabot.api.schemas.bus import BusTimetable
 from app.hyuabot.api.utlis.fastapi import get_db_session

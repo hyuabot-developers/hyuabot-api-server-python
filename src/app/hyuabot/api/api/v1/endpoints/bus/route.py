@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.bus import timetable_limit, convert_bus_realtime_item, \
+from app.hyuabot.api.api.v1.endpoints.bus import timetable_limit, convert_bus_realtime_item, \
     convert_bus_timetable_item
 from app.hyuabot.api.models.postgresql import bus as db
 from app.hyuabot.api.schemas.bus import BusDepartureByLine, BusTimetable, BusStopInformationResponse

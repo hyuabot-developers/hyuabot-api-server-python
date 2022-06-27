@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 import pytest as pytest
 
 from app.hyuabot.api import AppSettings
-from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type, shuttle_stop_type
+from app.hyuabot.api.api.v1.endpoints.shuttle import shuttle_line_type, shuttle_stop_type
 from app.hyuabot.api.main import app
 
 

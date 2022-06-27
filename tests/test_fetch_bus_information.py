@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.hyuabot.api import initialize_data, AppSettings
-from app.hyuabot.api.api.api_v1.endpoints.bus import bus_route_dict
+from app.hyuabot.api.api.v1.endpoints.bus import bus_route_dict
 from app.hyuabot.api.core.fetch.bus import fetch_bus_realtime
 from app.hyuabot.api.main import app
 from . import get_database_session

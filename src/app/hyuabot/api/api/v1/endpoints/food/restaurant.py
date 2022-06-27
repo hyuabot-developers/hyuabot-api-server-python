@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.food.convert import convert_menu_item
+from app.hyuabot.api.api.v1.endpoints.food.convert import convert_menu_item
 from app.hyuabot.api.models.postgresql import cafeteria as db
 from app.hyuabot.api.schemas.cafeteria import CafeteriaItem
 from app.hyuabot.api.utlis.fastapi import get_db_session

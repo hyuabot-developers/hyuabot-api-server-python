@@ -2,7 +2,7 @@ from math import sqrt
 
 from fastapi import APIRouter
 
-from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_dormitory, shuttle_shuttlecock_o, \
+from app.hyuabot.api.api.v1.endpoints.shuttle import shuttle_dormitory, shuttle_shuttlecock_o, \
     shuttle_station, shuttle_terminal, shuttle_shuttlecock_i, latitude_query, longitude_query
 from app.hyuabot.api.schemas.shuttle import ShuttleStop
 

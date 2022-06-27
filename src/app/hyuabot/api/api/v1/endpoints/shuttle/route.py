@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_dormitory, shuttle_shuttlecock_o, \
+from app.hyuabot.api.api.v1.endpoints.shuttle import shuttle_dormitory, shuttle_shuttlecock_o, \
     shuttle_station, shuttle_terminal, shuttle_shuttlecock_i
-from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_line_type
+from app.hyuabot.api.api.v1.endpoints.shuttle import shuttle_line_type
 from app.hyuabot.api.schemas.shuttle import ShuttleRouteStationListResponse
 
 route_router = APIRouter(prefix="/route")

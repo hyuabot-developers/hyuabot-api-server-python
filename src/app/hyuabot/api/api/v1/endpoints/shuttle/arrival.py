@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from app.hyuabot.api.api.api_v1.endpoints.shuttle import shuttle_stop_type
+from app.hyuabot.api.api.v1.endpoints.shuttle import shuttle_stop_type
 from app.hyuabot.api.core.date import get_shuttle_term, korea_standard_time
 from app.hyuabot.api.models.postgresql import shuttle as db
 from app.hyuabot.api.schemas.shuttle import ShuttleDepartureByStop, ShuttleDepartureItem, \
