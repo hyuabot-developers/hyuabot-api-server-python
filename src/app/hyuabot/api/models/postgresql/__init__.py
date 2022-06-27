@@ -1,7 +1,9 @@
+from typing import Any
+
 from sqlalchemy import Table, MetaData
-from sqlalchemy.orm import declarative_base
-# type: ignore
-ModelMeta = declarative_base()
+from sqlalchemy.ext.declarative import declarative_base
+
+ModelMeta: Any = declarative_base()
 
 
 class BaseModel(ModelMeta):
