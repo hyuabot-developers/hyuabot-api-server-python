@@ -1,12 +1,8 @@
-from typing import TypeAlias
-
 from sqlalchemy import Table, MetaData
-from sqlalchemy.orm import declarative_base
-
-ModelMeta: TypeAlias = declarative_base()
+from sqlalchemy.orm import DeclarativeMeta
 
 
-class BaseModel(ModelMeta):
+class Base(metaclass=DeclarativeMeta):
     __abstract__ = True
 
     __table__: Table

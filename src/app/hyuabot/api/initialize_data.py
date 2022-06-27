@@ -195,7 +195,8 @@ async def insert_subway_timetable_items(db_session: Session):
     await asyncio.gather(*tasks)
 
 
-async def fetch_subway_timetable_items(db_session: Session, station_name: str, route_name: str, weekday: str, heading: str):
+async def fetch_subway_timetable_items(
+        db_session: Session, station_name: str, route_name: str, weekday: str, heading: str):
     base_url = "https://raw.githubusercontent.com/hyuabot-developers/hyuabot-subway-timetable/main"
     route_color_dict = {"4호선": "skyblue", "수인분당선": "yellow"}
     url = f"{base_url}/{route_color_dict[route_name]}/{weekday}/{heading}.csv"
