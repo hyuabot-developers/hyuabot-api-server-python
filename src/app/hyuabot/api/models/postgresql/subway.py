@@ -18,7 +18,7 @@ class SubwayStation(BaseModel):
 class SubwayRealtime(BaseModel):
     __tablename__ = 'subway_realtime'
     __table_args__ = (
-        PrimaryKeyConstraint('route_name', 'station_name', 'remained_time'),
+        PrimaryKeyConstraint('station_name', 'route_name', 'train_number'),
     )
     route_name = Column(sqltypes.String, ForeignKey('subway_route.route_name'))
     station_name = Column(sqltypes.String, ForeignKey('subway_station.station_name'))

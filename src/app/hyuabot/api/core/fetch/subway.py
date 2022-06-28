@@ -55,6 +55,7 @@ async def get_subway_realtime_information(db_session: Session, route_name: str, 
           f"realtimePosition/0/60/{route_name}"
     timeout = aiohttp.ClientTimeout(total=3.0)
     arrival_list: list[SubwayRealtime] = []
+    train_number_list: list[str] = []
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(url) as response:
             response_json = await response.json()
@@ -93,6 +94,10 @@ async def get_subway_realtime_information(db_session: Session, route_name: str, 
                                 (terminal_station not in ["오이도", "인천"] or
                                  current_station not in list(minute_to_arrival.keys())[60:]):
                             continue
+                    if train_number in train_number_list:
+                        arrival_list.remove(arrival_list[train_number_list.index(train_number)])
+                        train_number_list.remove(train_number)
+                    train_number_list.append(train_number)
                     subway_item = SubwayRealtime(
                         route_name=route_name,
                         station_name=station_name,
