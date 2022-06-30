@@ -17,10 +17,7 @@ campus_id_dict = {
 
 @fetch_reading_room_router.get("", status_code=200)
 async def fetch_reading_room(db_session: Session = Depends(get_db_session)) -> JSONResponse:
-    tasks = []
-    for campus_name, campus_id in campus_id_dict.items():
-        tasks.append(fetch_reading_room_api(db_session))
-    await asyncio.gather(*tasks)
+    await fetch_reading_room_api(db_session)
     return JSONResponse({"message": "Fetch reading room data success"}, status_code=200)
 
 
