@@ -5,7 +5,7 @@ from strawberry.types import Info
 
 from app.hyuabot.api.api.v2.reading_room import ReadingRoomItem
 from app.hyuabot.api.api.v2.shuttle import Shuttle
-from app.hyuabot.api.api.v2.subway import Subway
+from app.hyuabot.api.api.v2.subway import SubwayItem
 from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 
 
@@ -16,8 +16,12 @@ class Query:
         return Shuttle()
 
     @strawberry.field
-    def subway(self) -> Subway:
-        return Subway()
+    def subway(self, stations: list[str], routes: list[str]) -> list[SubwayItem]:
+        result: list[SubwayItem] = []
+        for station_name in stations:
+            for route_name in routes:
+                result.append(SubwayItem(station_name=station_name, route_name=route_name))
+        return result
 
     @strawberry.field
     def reading_room(self, info: Info, room_name: str = None, campus_id: int = None,
