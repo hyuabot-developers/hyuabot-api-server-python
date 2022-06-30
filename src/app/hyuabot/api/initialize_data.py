@@ -6,10 +6,6 @@ from datetime import datetime, timezone, timedelta, time
 from aiohttp import ClientSession
 from sqlalchemy.orm import Session
 
-from app.hyuabot.api.core.fetch.bus import fetch_bus_realtime_in_a_row
-from app.hyuabot.api.core.fetch.food import fetch_restaurant_menu
-from app.hyuabot.api.core.fetch.reading_room import fetch_reading_room_api
-from app.hyuabot.api.core.fetch.subway import fetch_subway_realtime_information
 from app.hyuabot.api.models.postgresql.bus import BusRoute, BusStop, BusTimetable
 from app.hyuabot.api.models.postgresql.cafeteria import Cafeteria
 from app.hyuabot.api.models.postgresql.campus import Campus
@@ -284,15 +280,7 @@ async def initialize_data(db_session: Session):
     insert_subway_station_items(db_session)
     insert_bus_route_items(db_session)
     insert_bus_station_items(db_session)
-
-    tasks = [
-        insert_subway_timetable_items(db_session),
-        insert_shuttle_period_items(db_session),
-        fetch_reading_room_api(db_session),
-        insert_bus_timetable_items(db_session),
-        fetch_bus_realtime_in_a_row(db_session),
-        fetch_restaurant_menu(db_session),
-        fetch_subway_realtime_information(db_session),
-    ]
-    await asyncio.gather(*tasks)
+    await insert_shuttle_period_items(db_session)
+    await insert_subway_timetable_items(db_session)
+    await insert_bus_timetable_items(db_session)
     db_session.commit()
