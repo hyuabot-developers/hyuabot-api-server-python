@@ -3,10 +3,12 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from strawberry.types import Info
 
+from app.hyuabot.api.api.v2.bus import BusItem
 from app.hyuabot.api.api.v2.cafeteria import CafeteriaItem
 from app.hyuabot.api.api.v2.reading_room import ReadingRoomItem
 from app.hyuabot.api.api.v2.shuttle import Shuttle
 from app.hyuabot.api.api.v2.subway import SubwayItem
+from app.hyuabot.api.models.postgresql.bus import BusStop, BusRoute
 from app.hyuabot.api.models.postgresql.cafeteria import Cafeteria
 from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 
@@ -23,6 +25,28 @@ class Query:
         for station_name in stations:
             for route_name in routes:
                 result.append(SubwayItem(station_name=station_name, route_name=route_name))
+        return result
+
+    @strawberry.field
+    def bus(self, info: Info, stop_list: list[str], routes: list[str]) -> list[BusItem]:
+        result: list[BusItem] = []
+        db_session: Session = info.context["db_session"]
+        for stop_name in stop_list:
+            stop_query: BusStop = \
+                db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
+            for route_name in routes:
+                route_query: BusRoute = \
+                    db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
+                bus_item = BusItem(
+                    stop_name=stop_name,
+                    stop_id=stop_query.gbis_id,
+                    route_name=route_name,
+                    route_id=route_query.gbis_id,
+                    start_stop=route_query.start_stop,
+                    terminal_stop=route_query.terminal_stop,
+                    time_from_start_stop=route_query.time_from_start_stop,
+                )
+                result.append(bus_item)
         return result
 
     @strawberry.field
