@@ -3,9 +3,11 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from strawberry.types import Info
 
+from app.hyuabot.api.api.v2.cafeteria import CafeteriaItem
 from app.hyuabot.api.api.v2.reading_room import ReadingRoomItem
 from app.hyuabot.api.api.v2.shuttle import Shuttle
 from app.hyuabot.api.api.v2.subway import SubwayItem
+from app.hyuabot.api.models.postgresql.cafeteria import Cafeteria
 from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 
 
@@ -47,4 +49,23 @@ class Query:
                     available_seat=x.available_seat,
                 )
             )
+        return result
+
+    @strawberry.field
+    def cafeteria(self, info: Info, campus_id: int = None, caferia_id_list: list[int] = None) \
+            -> list[CafeteriaItem]:
+        if caferia_id_list is None:
+            caferia_id_list = []
+        db_session: Session = info.context["db_session"]
+        query = db_session.query(Cafeteria) \
+            .filter(and_(
+                Cafeteria.campus_id == campus_id if campus_id is not None else True,
+                Cafeteria.cafeteria_id in caferia_id_list if caferia_id_list else True,
+            )).all()
+        result: list[CafeteriaItem] = []
+        for x in query:
+            result.append(CafeteriaItem(
+                cafeteria_id=x.cafeteria_id,
+                cafeteria_name=x.cafeteria_name,
+            ))
         return result
