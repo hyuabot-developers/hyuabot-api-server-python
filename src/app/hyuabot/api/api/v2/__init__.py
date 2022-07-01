@@ -71,7 +71,7 @@ class Query:
                     active_seat=x.active_seat,
                     occupied_seat=x.occupied_seat,
                     available_seat=x.available_seat,
-                )
+                ),
             )
         return result
 

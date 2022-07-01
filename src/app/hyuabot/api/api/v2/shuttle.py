@@ -22,7 +22,7 @@ class Shuttle:
     @strawberry.field
     def timetable(
             self, info: Info, period: str = None, weekday: str = None, shuttle_type: str = None,
-            start_stop: str = None, start_time: str = None, end_time: str = None
+            start_stop: str = None, start_time: str = None, end_time: str = None,
     ) -> list[ShuttleTimetableItem]:
         db_session: Session = info.context["db_session"]
 
@@ -44,6 +44,6 @@ class Shuttle:
                     shuttle_type=x.shuttle_type,
                     shuttle_time=x.shuttle_time,
                     start_stop=x.start_stop,
-                )
+                ),
             )
         return result

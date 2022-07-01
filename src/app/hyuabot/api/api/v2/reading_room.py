@@ -11,4 +11,3 @@ class ReadingRoomItem:
     active_seat: int
     occupied_seat: int
     available_seat: int
-

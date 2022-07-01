@@ -52,11 +52,8 @@ async def fetch_bus_realtime(db_session: Session, stop_id: int, route_id: int, b
                         arrival_info_list.find("predicttime1").text, \
                         arrival_info_list.find("remainseatcnt1").text
                     arrival_list.append(BusRealtime(
-                        route_id=route_id,
-                        stop_id=stop_id,
-                        low_plate=bool(int(low_plate)),
-                        remained_stop=int(location),
-                        remained_time=int(predict_time),
+                        route_id=route_id, stop_id=stop_id, low_plate=bool(int(low_plate)),
+                        remained_stop=int(location), remained_time=int(predict_time),
                         remained_seat=int(remained_seat),
                     ))
 

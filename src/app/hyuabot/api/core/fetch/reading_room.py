@@ -1,5 +1,3 @@
-import asyncio
-
 import aiohttp
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
