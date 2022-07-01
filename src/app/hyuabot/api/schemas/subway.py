@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
 class SubwayRealtimeItem(BaseModel):
     train_number: str = Field(alias="trainNumber", title="열차 번호")
-    update_time: str = Field(alias="updateTime", title="갱신 시간")
+    update_time: datetime = Field(alias="updateTime", title="갱신 시간")
     is_last_train: bool = Field(alias="isLastTrain", title="막차 여부")
     terminal_station: str = Field(alias="terminalStation", title="행선지(역)", description="예시: '오이도'")
     current_station: str = Field(alias="currentStation", title="현재 위치(역)", description="예시: '반월'")

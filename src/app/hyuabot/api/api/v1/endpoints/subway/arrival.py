@@ -41,7 +41,7 @@ def convert_subway_realtime_items(realtime_items: list[SubwayRealtime]) -> list[
             terminalStation=realtime_item.terminal_station,
             currentStation=realtime_item.current_station,
             remainedTime=realtime_item.remained_time,
-            status=realtime_item.status,
+            statusCode=realtime_item.status,
         ) for realtime_item in realtime_items]
 
 

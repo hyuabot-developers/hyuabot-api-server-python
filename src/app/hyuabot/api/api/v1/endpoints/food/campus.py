@@ -14,6 +14,7 @@ restaurant_menu_campus_router = APIRouter(prefix="/campus")
 @restaurant_menu_campus_router.get("/{campus_name}", status_code=200,
                                    response_model=CampusItem, tags=["Restaurant Menu By campus"])
 async def fetch_restaurant_by_campus(campus_name: str, db_session: Session = Depends(get_db_session)):
+    campus_name = campus_name.upper()
     campus_item = db_session.query(Campus).filter(Campus.campus_name == campus_name).one_or_none()
     if campus_item is None:
         return JSONResponse(status_code=404, content={"message": "존재하지 않는 캠퍼스입니다."})
