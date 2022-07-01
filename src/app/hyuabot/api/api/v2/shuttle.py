@@ -17,8 +17,6 @@ class ShuttleTimetableItem:
 
 @strawberry.type
 class Shuttle:
-    timetable: list[ShuttleTimetableItem]
-
     @strawberry.field
     def timetable(
             self, info: Info, period: str = None, weekday: str = None, shuttle_type: str = None,
