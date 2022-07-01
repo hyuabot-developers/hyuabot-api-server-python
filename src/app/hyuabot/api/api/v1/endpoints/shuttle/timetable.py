@@ -24,7 +24,7 @@ async def fetch_timetable_list_by_stop(db_session=Depends(get_db_session)):
 
     tasks = []
     for shuttle_stop in shuttle_stop_dict.keys():
-        tasks.append(fetch_timetable_list_by_stop_all(shuttle_stop))
+        tasks.append(fetch_timetable_list_by_stop_all(shuttle_stop, db_session))
 
     results = []
     for shuttle_timetable_by_stop in await asyncio.gather(*tasks):
