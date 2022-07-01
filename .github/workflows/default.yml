@@ -5,7 +5,7 @@ env:
   bus_auth: ${{ secrets.BUS_AUTH }}
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.10
@@ -34,7 +34,7 @@ jobs:
         python -m flake8 src/app/hyuabot tests
 
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.10
@@ -62,7 +62,7 @@ jobs:
         python -m mypy --no-color-output src/app/hyuabot tests
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       BUS_API_KEY: ${{ secrets.BUS_API_KEY }}
       METRO_API_KEY: ${{ secrets.METRO_API_KEY }}
