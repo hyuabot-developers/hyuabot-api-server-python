@@ -16,6 +16,6 @@ class AppContext(NamedTuple):
     @staticmethod
     def from_app(app: FastAPI) -> AppContext:
         try:
-            return app.extra['app_context']  # type: ignore
+            return app.extra['app_context']
         except KeyError:
             raise RuntimeError('App context is not initialized')

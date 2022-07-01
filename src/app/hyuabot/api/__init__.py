@@ -2,19 +2,27 @@ __version__ = "1.0.0-alpha1"
 
 import functools
 
-from fastapi import FastAPI
+import strawberry
+from fastapi import FastAPI, Depends
+from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from starlette.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
+from strawberry.fastapi import GraphQLRouter
 
 from .api.v1 import API_V1_ROUTERS
+from .api.v2 import Query
 from .context import AppContext
 from .core.config import AppSettings
 from .core.fetch import fetch_router
 from .initialize_data import initialize_data
 from .models.postgresql import BaseModel
+from .utlis.fastapi import get_db_session
+
+
+async def get_context(db_session=Depends(get_db_session)):
+    return {"db_session": db_session}
 
 
 def create_app(app_settings: AppSettings) -> FastAPI:
@@ -34,6 +42,11 @@ def create_app(app_settings: AppSettings) -> FastAPI:
     app.extra["settings"] = app_settings
     for router in API_V1_ROUTERS:
         app.include_router(router, prefix=app_settings.API_V1_STR)
+
+    schema = strawberry.Schema(Query)
+    graphql_app = GraphQLRouter(schema, context_getter=get_context)
+    app.include_router(graphql_app, prefix=app_settings.API_V2_STR)
+
     app.include_router(fetch_router)
     return app
 
