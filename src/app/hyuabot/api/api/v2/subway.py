@@ -36,7 +36,8 @@ class SubwayItem:
     @strawberry.field
     def timetable(self,
                   info: Info, heading: str = None, weekday: str = None,
-                  start_time: datetime.time = None, end_time: datetime.time = None) -> list[SubwayTimetableItem]:
+                  start_time: datetime.time = None, end_time: datetime.time = None) \
+            -> list[SubwayTimetableItem]:
         db_session: Session = info.context["db_session"]
         query = db_session.query(SubwayTimetable).filter(and_(
             SubwayTimetable.station_name == self.station_name,

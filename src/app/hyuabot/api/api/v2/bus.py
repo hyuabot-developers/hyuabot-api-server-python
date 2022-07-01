@@ -53,7 +53,7 @@ class BusItem:
             BusRealtime.stop_id == self.stop_id,
         )).all()
         result: list[BusRealtimeItem] = []
-        for x in query: # type: BusRealtime
+        for x in query:  # type: BusRealtime
             result.append(BusRealtimeItem(
                 low_floor=x.low_plate,
                 remained_stop=x.remained_stop,
