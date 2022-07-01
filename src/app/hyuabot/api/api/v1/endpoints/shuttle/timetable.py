@@ -3,7 +3,7 @@ import asyncio
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
-from app.hyuabot.api import get_db_session
+from app.hyuabot.api.utlis.fastapi import get_db_session
 from app.hyuabot.api.api.v1.endpoints.shuttle.arrival import fetch_timetable_list_by_stop_all
 from app.hyuabot.api.core.date import get_shuttle_term
 from app.hyuabot.api.schemas.shuttle import ShuttleTimetable
