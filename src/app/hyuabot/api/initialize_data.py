@@ -206,6 +206,9 @@ async def fetch_subway_timetable_items(
             reader = csv.reader((await response.text()).splitlines(), delimiter=",")
             timetable: list[SubwayTimetable] = []
             for terminal_station, departure_time in reader:
+                if str(departure_time).split(":")[0] < "05":
+                    departure_time = \
+                        str(int(str(departure_time).split(":")[0]) + 24) + departure_time[2:]
                 timetable.append(SubwayTimetable(
                     route_name=route_name,
                     station_name=station_name,
