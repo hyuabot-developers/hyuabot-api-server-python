@@ -21,10 +21,10 @@ timetable_limit = Query(None, alias="count", description="버스 시간표를 �
 def convert_bus_realtime_item(items: list[db.BusRealtime]) -> list[BusRealtimeItem]:
     return [
         BusRealtimeItem(
-            low_plate=item.low_plate,
+            lowPlate=item.low_plate,
             location=item.remained_stop,
-            remained_time=item.remained_time,
-            remained_seat=item.remained_seat,
+            remainedTime=item.remained_time,
+            remainedSeat=item.remained_seat,
         )
         for item in items
     ]
