@@ -8,5 +8,5 @@ def convert_menu_item(menu_items: list[db.Menu]) -> dict[str, list[MenuItem]]:
         if menu_item.time_type not in menu_dict:
             menu_dict[menu_item.time_type] = []
         menu_dict[menu_item.time_type].append(
-            MenuItem(name=menu_item.menu_description, price=menu_item.menu_price))
+            MenuItem(menu=menu_item.menu_description, price=menu_item.menu_price))
     return menu_dict
