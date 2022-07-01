@@ -1,8 +1,8 @@
-FROM python:latest
+FROM python:3.10-bullseye
 
 WORKDIR /code
 
-RUN apt install -y libpq-dev
+RUN apt-get update && apt-get -y install libpq-dev gcc && pip install psycopg2
 
 COPY requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
