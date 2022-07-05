@@ -76,15 +76,15 @@ class Query:
         return result
 
     @strawberry.field
-    def cafeteria(self, info: Info, campus_id: int = None, caferia_id_list: list[int] = None) \
+    def cafeteria(self, info: Info, campus_id: int = None, cafeteria_id_list: list[int] = None) \
             -> list[CafeteriaItem]:
-        if caferia_id_list is None:
+        if cafeteria_id_list is None:
             caferia_id_list = []
         db_session: Session = info.context["db_session"]
         query = db_session.query(Cafeteria) \
             .filter(and_(
                 Cafeteria.campus_id == campus_id if campus_id is not None else True,
-                Cafeteria.cafeteria_id in caferia_id_list if caferia_id_list else True,
+                Cafeteria.cafeteria_id in cafeteria_id_list if cafeteria_id_list else True,
             )).all()
         result: list[CafeteriaItem] = []
         for x in query:
