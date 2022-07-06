@@ -20,7 +20,7 @@ class ShuttleTimetableItem:
 @strawberry.type
 class Shuttle:
     @strawberry.field
-    def period(self, info: Info):
+    def period(self, info: Info) -> str:
         db_session: Session = info.context["db_session"]
         now = datetime.now()
         period_query = db_session.query(ShuttlePeriod)\
