@@ -27,10 +27,10 @@ class Shuttle:
             .filter(and_(
                 ShuttlePeriod.start_date <= now,
                 ShuttlePeriod.end_date >= now,
-            )).one_or_none()
-        if period_query is None:
-            return ""
-        return period_query.period
+            )).all()
+        for period in period_query:
+            return period.period
+        return ""
 
     @strawberry.field
     def timetable(
