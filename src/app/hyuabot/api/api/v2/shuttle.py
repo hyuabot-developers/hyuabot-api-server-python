@@ -1,9 +1,11 @@
+from datetime import datetime
+
 import strawberry
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from strawberry.types import Info
 
-from app.hyuabot.api.models.postgresql.shuttle import ShuttleTimetable
+from app.hyuabot.api.models.postgresql.shuttle import ShuttleTimetable, ShuttlePeriod
 
 
 @strawberry.type
@@ -17,6 +19,19 @@ class ShuttleTimetableItem:
 
 @strawberry.type
 class Shuttle:
+    @strawberry.field
+    def period(self, info: Info):
+        db_session: Session = info.context["db_session"]
+        now = datetime.now()
+        period_query = db_session.query(ShuttlePeriod)\
+            .filter(and_(
+                ShuttlePeriod.start_date <= now,
+                ShuttlePeriod.end_date >= now,
+            )).one_or_none()
+        if period_query is None:
+            return ""
+        return period_query.period
+
     @strawberry.field
     def timetable(
             self, info: Info, period: str = None, weekday: str = None, shuttle_type: str = None,
