@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import time, datetime
 
 import strawberry
 from sqlalchemy import and_
@@ -34,6 +34,8 @@ class BusItem:
     @strawberry.field
     def timetable(self, info: Info, weekday: str) -> list[BusTimetableItem]:
         db_session: Session = info.context["db_session"]
+        if weekday == "now":
+            weekday = "weekdays" if datetime.now().weekday() < 5 else "weekends"
         query = db_session.query(BusTimetable).filter(and_(
             BusTimetable.route_id == self.route_id,
             BusTimetable.weekday == weekday if weekday else True,

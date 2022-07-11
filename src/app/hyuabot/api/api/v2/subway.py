@@ -39,6 +39,8 @@ class SubwayItem:
                   start_time: datetime.time = None, end_time: datetime.time = None) \
             -> list[SubwayTimetableItem]:
         db_session: Session = info.context["db_session"]
+        if weekday == "now":
+            weekday = "weekdays" if datetime.datetime.now().weekday() < 5 else "weekends"
         query = db_session.query(SubwayTimetable).filter(and_(
             SubwayTimetable.station_name == self.station_name,
             SubwayTimetable.route_name == self.route_name,

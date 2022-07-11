@@ -38,7 +38,8 @@ class Shuttle:
             start_stop: str = None, start_time: str = None, end_time: str = None,
     ) -> list[ShuttleTimetableItem]:
         db_session: Session = info.context["db_session"]
-
+        if weekday == "now":
+            weekday = "weekdays" if datetime.now().weekday() < 5 else "weekends"
         query = db_session.query(ShuttleTimetable) \
             .filter(and_(
                 ShuttleTimetable.period == period if period else True,
