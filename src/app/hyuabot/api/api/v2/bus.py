@@ -11,6 +11,7 @@ from app.hyuabot.api.models.postgresql.bus import BusTimetable, BusRealtime
 @strawberry.type
 class BusTimetableItem:
     departure_time: time
+    weekday: str
 
 
 @strawberry.type
@@ -44,6 +45,7 @@ class BusItem:
         for x in query:
             result.append(BusTimetableItem(
                 departure_time=x.departure_time,
+                weekday=x.weekday,
             ))
         return result
 
