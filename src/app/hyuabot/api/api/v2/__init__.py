@@ -56,7 +56,7 @@ class Query:
         query = db_session.query(ReadingRoom) \
             .filter(and_(
                 ReadingRoom.room_name == room_name if room_name else True,
-                ReadingRoom.campus_id == campus_id if campus_id else True,
+                ReadingRoom.campus_id == campus_id if campus_id is not None else True,
                 ReadingRoom.is_active == is_active,
             )).all()
         result: list[ReadingRoomItem] = []
