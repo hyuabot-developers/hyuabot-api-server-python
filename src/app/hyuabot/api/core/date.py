@@ -42,8 +42,8 @@ async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
 
     lunar_period_item = db_session.query(ShuttlePeriod)\
         .filter(and_(
-            date_item >= ShuttlePeriod.start_date,
-            date_item <= ShuttlePeriod.end_date,
+            calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
+            calendar.LunarIsoFormat() <= ShuttlePeriod.end_date,
             ShuttlePeriod.calendar_type == "lunar",
             ShuttlePeriod.period == "halt"))\
         .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()

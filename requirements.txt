@@ -15,3 +15,4 @@ psycopg2-binary==2.8.6
 SQLAlchemy>=1.4.37
 SQLAlchemy-Utils>=0.38.2
 strawberry-graphql>=0.114.5
+korean-lunar-calendar>=0.2.1
