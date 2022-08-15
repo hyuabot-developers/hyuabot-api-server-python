@@ -37,8 +37,17 @@ async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
 
     # 운행 여부 확인
     is_working = True
+    weekday_key = None
     if period_item.period == "halt":
         is_working = False
+    elif period_item.period == "holiday":
+        weekday_key = "weekends"
+        period_item = db_session.query(ShuttlePeriod) \
+            .filter(and_(
+            date_item >= ShuttlePeriod.start_date,
+            date_item <= ShuttlePeriod.end_date,
+            ShuttlePeriod.calendar_type == "solar")) \
+            .order_by(ShuttlePeriod.start_date - ShuttlePeriod.end_date).first()
 
     lunar_period_item = db_session.query(ShuttlePeriod)\
         .filter(and_(
@@ -50,8 +59,9 @@ async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
     if lunar_period_item is not None:
         is_working = False
 
-    if date_item.weekday() >= 5 or date_item.strftime("%Y-%m-%d") in holidays.KR():
-        weekday_key = "weekends"
-    else:
-        weekday_key = "weekdays"
+    if weekday_key is None:
+        if date_item.weekday() >= 5 or date_item.strftime("%Y-%m-%d") in holidays.KR():
+            weekday_key = "weekends"
+        else:
+            weekday_key = "weekdays"
     return is_working, period_item.period, weekday_key, date_item.strftime("%Y-%m-%d %H:%M:%S")
