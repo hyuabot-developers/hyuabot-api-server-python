@@ -33,7 +33,7 @@ async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
             ShuttlePeriod.calendar_type == "solar"))\
         .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
     if period_item is None:
-        return True, "semester", "weekays", date_item.strftime("%Y-%m-%d %H:%M:%S")
+        return True, "semester", "weekdays", date_item.strftime("%Y-%m-%d %H:%M:%S")
 
     # 운행 여부 확인
     is_working = True
