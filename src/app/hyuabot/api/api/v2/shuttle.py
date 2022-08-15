@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import strawberry
+from korean_lunar_calendar import KoreanLunarCalendar
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from strawberry.types import Info
@@ -23,14 +24,52 @@ class Shuttle:
     def period(self, info: Info) -> str:
         db_session: Session = info.context["db_session"]
         now = datetime.now()
-        period_query = db_session.query(ShuttlePeriod)\
+        period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-                ShuttlePeriod.start_date <= now,
-                ShuttlePeriod.end_date >= now,
-            )).all()
-        for period in period_query:
-            return period.period
-        return ""
+            now >= ShuttlePeriod.start_date,
+            now <= ShuttlePeriod.end_date,
+            ShuttlePeriod.period in ["semester", "vacation", "vacation_session", "halt"],
+            ShuttlePeriod.calendar_type == "solar")) \
+            .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
+
+        calendar = KoreanLunarCalendar()
+        calendar.setSolarDate(now.year, now.month, now.day)
+        lunar_period_item = db_session.query(ShuttlePeriod) \
+            .filter(and_(
+            calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
+            calendar.LunarIsoFormat() <= ShuttlePeriod.end_date,
+            ShuttlePeriod.calendar_type == "lunar",
+            ShuttlePeriod.period == "halt")) \
+            .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
+        if lunar_period_item is not None:
+            return lunar_period_item.period
+        return period_item.period
+
+    @strawberry.field
+    def weekday(self, info: Info):
+        db_session: Session = info.context["db_session"]
+        now = datetime.now()
+        period_item = db_session.query(ShuttlePeriod) \
+            .filter(and_(
+            now >= ShuttlePeriod.start_date,
+            now <= ShuttlePeriod.end_date,
+            ShuttlePeriod.period == "holiday",
+            ShuttlePeriod.calendar_type == "solar")) \
+            .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
+
+        calendar = KoreanLunarCalendar()
+        calendar.setSolarDate(now.year, now.month, now.day)
+        lunar_period_item = db_session.query(ShuttlePeriod) \
+            .filter(and_(
+            calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
+            calendar.LunarIsoFormat() <= ShuttlePeriod.end_date,
+            ShuttlePeriod.calendar_type == "lunar",
+            ShuttlePeriod.period == "holiday")) \
+            .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
+
+        if period_item is not None or lunar_period_item is not None or now.weekday() >= 5:
+            return "weekends"
+        return "weekdays"
 
     @strawberry.field
     def timetable(
