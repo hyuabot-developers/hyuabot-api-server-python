@@ -76,9 +76,9 @@ async def insert_shuttle_period_items(db_session: Session):
                     ShuttlePeriod(
                         period="holiday",
                         start_date=datetime.fromisoformat(
-                            f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T00:00:00+09:00"),
+                            f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T00:00:00"),
                         end_date=datetime.fromisoformat(
-                            f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T23:59:59+09:00"),
+                            f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T23:59:59"),
                     ))
             for calendar_type, holiday_list in date_json['halt'].items():
                 for holiday in holiday_list:
@@ -91,9 +91,9 @@ async def insert_shuttle_period_items(db_session: Session):
                         ShuttlePeriod(
                             period="halt",
                             start_date=datetime.fromisoformat(
-                                f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T00:00:00+09:00"),
+                                f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T00:00:00"),
                             end_date=datetime.fromisoformat(
-                                f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T23:59:59+09:00"),
+                                f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T23:59:59"),
                             calendar_type=calendar_type,
                         ))
             for period in ["semester", "vacation", "vacation_session"]:
