@@ -28,10 +28,16 @@ class Shuttle:
             .filter(and_(
             now >= ShuttlePeriod.start_date,
             now <= ShuttlePeriod.end_date,
-            ShuttlePeriod.period in ["semester", "vacation", "vacation_session", "halt"],
+            ShuttlePeriod.period != "holiday",
             ShuttlePeriod.calendar_type == "solar")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
-
+        if period_item is None:
+            period_item = db_session.query(ShuttlePeriod) \
+                .filter(and_(
+                now >= ShuttlePeriod.start_date,
+                now <= ShuttlePeriod.end_date,
+                ShuttlePeriod.calendar_type == "solar")) \
+                .order_by(ShuttlePeriod.start_date - ShuttlePeriod.end_date).first()
         calendar = KoreanLunarCalendar()
         calendar.setSolarDate(now.year, now.month, now.day)
         lunar_period_item = db_session.query(ShuttlePeriod) \
