@@ -46,7 +46,7 @@ class Shuttle:
         return period_item.period
 
     @strawberry.field
-    def weekday(self, info: Info):
+    def weekday(self, info: Info) -> str:
         db_session: Session = info.context["db_session"]
         now = datetime.now()
         period_item = db_session.query(ShuttlePeriod) \
