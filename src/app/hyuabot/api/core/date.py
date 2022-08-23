@@ -44,9 +44,9 @@ async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
         weekday_key = "weekends"
         period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-            date_item >= ShuttlePeriod.start_date,
-            date_item <= ShuttlePeriod.end_date,
-            ShuttlePeriod.calendar_type == "solar")) \
+                date_item >= ShuttlePeriod.start_date,
+                date_item <= ShuttlePeriod.end_date,
+                ShuttlePeriod.calendar_type == "solar")) \
             .order_by(ShuttlePeriod.start_date - ShuttlePeriod.end_date).first()
 
     lunar_period_item = db_session.query(ShuttlePeriod)\
