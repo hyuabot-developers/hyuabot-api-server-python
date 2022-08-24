@@ -68,7 +68,8 @@ async def fetch_subway_information(campus_name: str, db_session: Session = Depen
                         db_session.query(SubwayRealtime).filter(
                             and_(
                                 SubwayRealtime.route_name == route_item.route_name,
-                                SubwayRealtime.heading == "up")).order_by(SubwayRealtime.remained_time).all()),
+                                SubwayRealtime.heading == "up"),
+                        ).order_by(SubwayRealtime.remained_time).all()),
                     down=convert_subway_realtime_items(
                         db_session.query(SubwayRealtime).filter(
                             and_(
