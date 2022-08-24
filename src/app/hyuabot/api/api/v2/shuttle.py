@@ -26,26 +26,26 @@ class Shuttle:
         now = datetime.now()
         period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-            now >= ShuttlePeriod.start_date,
-            now <= ShuttlePeriod.end_date,
-            ShuttlePeriod.period != "holiday",
-            ShuttlePeriod.calendar_type == "solar")) \
+                now >= ShuttlePeriod.start_date,
+                now <= ShuttlePeriod.end_date,
+                ShuttlePeriod.period != "holiday",
+                ShuttlePeriod.calendar_type == "solar")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
         if period_item is None:
             period_item = db_session.query(ShuttlePeriod) \
                 .filter(and_(
-                now >= ShuttlePeriod.start_date,
-                now <= ShuttlePeriod.end_date,
-                ShuttlePeriod.calendar_type == "solar")) \
+                    now >= ShuttlePeriod.start_date,
+                    now <= ShuttlePeriod.end_date,
+                    ShuttlePeriod.calendar_type == "solar")) \
                 .order_by(ShuttlePeriod.start_date - ShuttlePeriod.end_date).first()
         calendar = KoreanLunarCalendar()
         calendar.setSolarDate(now.year, now.month, now.day)
         lunar_period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-            calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
-            calendar.LunarIsoFormat() <= ShuttlePeriod.end_date,
-            ShuttlePeriod.calendar_type == "lunar",
-            ShuttlePeriod.period == "halt")) \
+                calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
+                calendar.LunarIsoFormat() <= ShuttlePeriod.end_date,
+                ShuttlePeriod.calendar_type == "lunar",
+                ShuttlePeriod.period == "halt")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
         if lunar_period_item is not None:
             return lunar_period_item.period
@@ -57,20 +57,20 @@ class Shuttle:
         now = datetime.now()
         period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-            now >= ShuttlePeriod.start_date,
-            now <= ShuttlePeriod.end_date,
-            ShuttlePeriod.period == "holiday",
-            ShuttlePeriod.calendar_type == "solar")) \
+                now >= ShuttlePeriod.start_date,
+                now <= ShuttlePeriod.end_date,
+                ShuttlePeriod.period == "holiday",
+                ShuttlePeriod.calendar_type == "solar")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
 
         calendar = KoreanLunarCalendar()
         calendar.setSolarDate(now.year, now.month, now.day)
         lunar_period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-            calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
-            calendar.LunarIsoFormat() <= ShuttlePeriod.end_date,
-            ShuttlePeriod.calendar_type == "lunar",
-            ShuttlePeriod.period == "holiday")) \
+                calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
+                calendar.LunarIsoFormat() <= ShuttlePeriod.end_date,
+                ShuttlePeriod.calendar_type == "lunar",
+                ShuttlePeriod.period == "holiday")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
 
         if period_item is not None or lunar_period_item is not None or now.weekday() >= 5:

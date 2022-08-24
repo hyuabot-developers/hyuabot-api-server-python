@@ -79,7 +79,7 @@ class Query:
     def cafeteria(self, info: Info, campus_id: int = None, cafeteria_id_list: list[int] = None) \
             -> list[CafeteriaItem]:
         if cafeteria_id_list is None:
-            caferia_id_list = []
+            cafeteria_id_list = []
         db_session: Session = info.context["db_session"]
         query = db_session.query(Cafeteria) \
             .filter(and_(
