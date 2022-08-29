@@ -20,45 +20,70 @@ class Query:
         return Shuttle()
 
     @strawberry.field
-    def subway(self, stations: list[str], routes: list[str]) -> list[SubwayItem]:
+    def subway(self, stations: list[str] | None, routes: list[str] | None,
+               route_pair: list[tuple[str, str]] | None) -> list[SubwayItem]:
         result: list[SubwayItem] = []
-        for station_name in stations:
-            for route_name in routes:
+        if route_pair is not None:
+            for station_name, route_name in route_pair:
                 result.append(SubwayItem(station_name=station_name, route_name=route_name))
+        else:
+            for station_name in stations:
+                for route_name in routes:
+                    result.append(SubwayItem(station_name=station_name, route_name=route_name))
         return result
 
     @strawberry.field
-    def bus(self, info: Info, stop_list: list[str], routes: list[str]) -> list[BusItem]:
+    def bus(self, info: Info, stop_list: list[str] | None, routes: list[str] | None,
+            route_pair: list[tuple[str, str]] | None) -> list[BusItem]:
         result: list[BusItem] = []
         db_session: Session = info.context["db_session"]
-        for stop_name in stop_list:
-            stop_query: BusStop = \
-                db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
-            for route_name in routes:
+        if route_pair is not None:
+            for stop_name, route_name in route_pair:
+                stop_query: BusStop = \
+                    db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
                 route_query: BusRoute = \
                     db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
-                bus_item = BusItem(
-                    stop_name=stop_name,
-                    stop_id=stop_query.gbis_id,
-                    route_name=route_name,
-                    route_id=route_query.gbis_id,
-                    start_stop=route_query.start_stop,
-                    terminal_stop=route_query.terminal_stop,
-                    time_from_start_stop=route_query.time_from_start_stop,
-                )
-                result.append(bus_item)
+                if stop_query is not None and route_query is not None:
+                    bus_item = BusItem(
+                        stop_name=stop_name,
+                        stop_id=stop_query.gbis_id,
+                        route_name=route_name,
+                        route_id=route_query.gbis_id,
+                        start_stop=route_query.start_stop,
+                        terminal_stop=route_query.terminal_stop,
+                        time_from_start_stop=route_query.time_from_start_stop,
+                    )
+                    result.append(bus_item)
+        else:
+            for stop_name in stop_list:
+                stop_query: BusStop = \
+                    db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
+                for route_name in routes:
+                    route_query: BusRoute = \
+                        db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
+                    bus_item = BusItem(
+                        stop_name=stop_name,
+                        stop_id=stop_query.gbis_id,
+                        route_name=route_name,
+                        route_id=route_query.gbis_id,
+                        start_stop=route_query.start_stop,
+                        terminal_stop=route_query.terminal_stop,
+                        time_from_start_stop=route_query.time_from_start_stop,
+                    )
+                    result.append(bus_item)
         return result
 
     @strawberry.field
-    def reading_room(self, info: Info, room_name: str = None, campus_id: int = None,
+    def reading_room(self, info: Info, room_name: str | None, campus_id: int | None,
                      is_active: bool = True) -> list[ReadingRoomItem]:
         db_session: Session = info.context["db_session"]
+        expressions = [ReadingRoom.is_active == is_active]
+        if room_name is not None:
+            expressions.append(ReadingRoom.room_name == room_name)
+        if campus_id is not None:
+            expressions.append(ReadingRoom.campus_id == campus_id)
         query = db_session.query(ReadingRoom) \
-            .filter(and_(
-                ReadingRoom.room_name == room_name if room_name else True,
-                ReadingRoom.campus_id == campus_id if campus_id is not None else True,
-                ReadingRoom.is_active == is_active,
-            )).all()
+            .filter(and_(True, *expressions)).all()
         result: list[ReadingRoomItem] = []
         for x in query:  # type: ReadingRoom
             result.append(
@@ -81,11 +106,13 @@ class Query:
         if cafeteria_id_list is None:
             cafeteria_id_list = []
         db_session: Session = info.context["db_session"]
+        expressions = []
+        if campus_id is not None:
+            expressions.append(Cafeteria.campus_id == campus_id)
+        if len(cafeteria_id_list) > 0:
+            expressions.append(Cafeteria.id.in_(cafeteria_id_list))
         query = db_session.query(Cafeteria) \
-            .filter(and_(
-                Cafeteria.campus_id == campus_id if campus_id is not None else True,
-                Cafeteria.cafeteria_id in cafeteria_id_list if cafeteria_id_list else True,
-            )).all()
+            .filter(and_(True, *expressions)).all()
         result: list[CafeteriaItem] = []
         for x in query:
             result.append(CafeteriaItem(
