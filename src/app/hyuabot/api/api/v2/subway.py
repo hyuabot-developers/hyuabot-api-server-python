@@ -35,20 +35,24 @@ class SubwayItem:
 
     @strawberry.field
     def timetable(self,
-                  info: Info, heading: str = None, weekday: str = None,
-                  start_time: datetime.time = None, end_time: datetime.time = None) \
+                  info: Info, heading: str | None, weekday: str | None,
+                  start_time: datetime.time | None, end_time: datetime.time | None) \
             -> list[SubwayTimetableItem]:
         db_session: Session = info.context["db_session"]
+        expressions = []
         if weekday == "now":
             weekday = "weekdays" if datetime.datetime.now().weekday() < 5 else "weekends"
-        query = db_session.query(SubwayTimetable).filter(and_(
-            SubwayTimetable.station_name == self.station_name,
-            SubwayTimetable.route_name == self.route_name,
-            SubwayTimetable.heading == heading if heading else True,
-            SubwayTimetable.weekday == weekday if weekday else True,
-            SubwayTimetable.departure_time >= start_time if start_time else True,
-            SubwayTimetable.departure_time <= end_time if end_time else True,
-        )).order_by(SubwayTimetable.departure_time).all()
+        if weekday is not None:
+            expressions.append(SubwayTimetable.weekday == weekday)
+        if heading is not None:
+            expressions.append(SubwayTimetable.heading == heading)
+        if start_time is not None:
+            expressions.append(SubwayTimetable.departure_time >= start_time)
+        if end_time is not None:
+            expressions.append(SubwayTimetable.departure_time <= end_time)
+
+
+        query = db_session.query(SubwayTimetable).filter(and_(True, *expressions)).order_by(SubwayTimetable.departure_time).all()
         result: list[SubwayTimetableItem] = []
         for x in query:
             result.append(SubwayTimetableItem(
