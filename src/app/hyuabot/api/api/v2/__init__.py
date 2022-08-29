@@ -15,6 +15,25 @@ from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 
 @strawberry.type
 class Query:
+    @staticmethod
+    def bus_query(db_session: Session, stop_name: str, route_name: str) -> BusItem | None:
+        stop_query: BusStop = \
+            db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
+        route_query: BusRoute = \
+            db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
+        if stop_query is not None and route_query is not None:
+            bus_item = BusItem(
+                stop_name=stop_name,
+                stop_id=stop_query.gbis_id,
+                route_name=route_name,
+                route_id=route_query.gbis_id,
+                start_stop=route_query.start_stop,
+                terminal_stop=route_query.terminal_stop,
+                time_from_start_stop=route_query.time_from_start_stop,
+            )
+            return bus_item
+        return None
+
     @strawberry.field
     def shuttle(self) -> Shuttle:
         return Shuttle()
@@ -26,7 +45,7 @@ class Query:
         if route_pair is not None:
             for station_name, route_name in route_pair:
                 result.append(SubwayItem(station_name=station_name, route_name=route_name))
-        else:
+        elif stations is not None and routes is not None:
             for station_name in stations:
                 for route_name in routes:
                     result.append(SubwayItem(station_name=station_name, route_name=route_name))
@@ -39,38 +58,15 @@ class Query:
         db_session: Session = info.context["db_session"]
         if route_pair is not None:
             for stop_name, route_name in route_pair:
-                stop_query: BusStop = \
-                    db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
-                route_query: BusRoute = \
-                    db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
-                if stop_query is not None and route_query is not None:
-                    bus_item = BusItem(
-                        stop_name=stop_name,
-                        stop_id=stop_query.gbis_id,
-                        route_name=route_name,
-                        route_id=route_query.gbis_id,
-                        start_stop=route_query.start_stop,
-                        terminal_stop=route_query.terminal_stop,
-                        time_from_start_stop=route_query.time_from_start_stop,
-                    )
+                bus_item = self.bus_query(db_session, stop_name, route_name)
+                if bus_item is not None:
                     result.append(bus_item)
-        else:
+        elif stop_list is not None and routes is not None:
             for stop_name in stop_list:
-                stop_query: BusStop = \
-                    db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
                 for route_name in routes:
-                    route_query: BusRoute = \
-                        db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
-                    bus_item = BusItem(
-                        stop_name=stop_name,
-                        stop_id=stop_query.gbis_id,
-                        route_name=route_name,
-                        route_id=route_query.gbis_id,
-                        start_stop=route_query.start_stop,
-                        terminal_stop=route_query.terminal_stop,
-                        time_from_start_stop=route_query.time_from_start_stop,
-                    )
-                    result.append(bus_item)
+                    bus_item = self.bus_query(db_session, stop_name, route_name)
+                    if bus_item is not None:
+                        result.append(bus_item)
         return result
 
     @strawberry.field

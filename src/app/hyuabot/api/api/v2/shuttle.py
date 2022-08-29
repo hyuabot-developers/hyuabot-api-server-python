@@ -80,7 +80,7 @@ class Shuttle:
                 ShuttlePeriod.period == "holiday")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
 
-        if period_item is not None or lunar_period_item is not None or now.weekday() >= 5:
+        if period_item is not None or lunar_period_item is not None or current_date.weekday() >= 5:
             return "weekends"
         return "weekdays"
 
