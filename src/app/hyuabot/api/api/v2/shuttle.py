@@ -56,19 +56,22 @@ class Shuttle:
         return period_item.period
 
     @strawberry.field
-    def weekday(self, info: Info) -> str:
+    def weekday(self, info: Info,  date: str | None) -> str:
         db_session: Session = info.context["db_session"]
-        now = datetime.now()
+        if date is None:
+            current_date = datetime.now()
+        else:
+            current_date = datetime.strptime(date, "%Y-%m-%d")
         period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-                now >= ShuttlePeriod.start_date,
-                now <= ShuttlePeriod.end_date,
+                current_date >= ShuttlePeriod.start_date,
+                current_date <= ShuttlePeriod.end_date,
                 ShuttlePeriod.period == "holiday",
                 ShuttlePeriod.calendar_type == "solar")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
 
         calendar = KoreanLunarCalendar()
-        calendar.setSolarDate(now.year, now.month, now.day)
+        calendar.setSolarDate(current_date.year, current_date.month, current_date.day)
         lunar_period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
                 calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
@@ -83,21 +86,28 @@ class Shuttle:
 
     @strawberry.field
     def timetable(
-            self, info: Info, period: str = None, weekday: str = None, shuttle_type: str = None,
-            start_stop: str = None, start_time: str = None, end_time: str = None,
+            self, info: Info, period: str | None, weekday: str | None, shuttle_type: str | None,
+            start_stop: str | None, start_time: str | None, end_time: str | None, count: int = 999,
     ) -> list[ShuttleTimetableItem]:
         db_session: Session = info.context["db_session"]
+        expressions = []
         if weekday == "now":
             weekday = "weekdays" if datetime.now().weekday() < 5 else "weekends"
+        if weekday is not None:
+            expressions.append(ShuttleTimetable.weekday == weekday)
+        if period is not None:
+            expressions.append(ShuttleTimetable.period == period)
+        if shuttle_type is not None:
+            expressions.append(ShuttleTimetable.shuttle_type == shuttle_type)
+        if start_stop is not None:
+            expressions.append(ShuttleTimetable.start_stop == start_stop)
+        if start_time is not None:
+            expressions.append(ShuttleTimetable.start_time == start_time)
+        if end_time is not None:
+            expressions.append(ShuttleTimetable.end_time == end_time)
+
         query = db_session.query(ShuttleTimetable) \
-            .filter(and_(
-                ShuttleTimetable.period == period if period else True,
-                ShuttleTimetable.weekday == weekday if weekday else True,
-                ShuttleTimetable.shuttle_type == shuttle_type if shuttle_type else True,
-                ShuttleTimetable.start_stop == start_stop if start_stop else True,
-                ShuttleTimetable.shuttle_time >= start_time if start_time else True,
-                ShuttleTimetable.shuttle_time <= end_time if end_time else True,
-            )).all()
+            .filter(and_(True, *expressions)).limit(count)
         result: list[ShuttleTimetableItem] = []
         for x in query:  # type: ShuttleTimetable
             result.append(
