@@ -21,25 +21,29 @@ class ShuttleTimetableItem:
 @strawberry.type
 class Shuttle:
     @strawberry.field
-    def period(self, info: Info) -> str:
+    def period(self, info: Info, date: str | None) -> str:
         db_session: Session = info.context["db_session"]
-        now = datetime.now()
+        if date is None:
+            current_date = datetime.now()
+        else:
+            current_date = datetime.strptime(date, "%Y-%m-%d")
+
         period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
-                now >= ShuttlePeriod.start_date,
-                now <= ShuttlePeriod.end_date,
+                current_date >= ShuttlePeriod.start_date,
+                current_date <= ShuttlePeriod.end_date,
                 ShuttlePeriod.period != "holiday",
                 ShuttlePeriod.calendar_type == "solar")) \
             .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
         if period_item is None:
             period_item = db_session.query(ShuttlePeriod) \
                 .filter(and_(
-                    now >= ShuttlePeriod.start_date,
-                    now <= ShuttlePeriod.end_date,
+                    current_date >= ShuttlePeriod.start_date,
+                    current_date <= ShuttlePeriod.end_date,
                     ShuttlePeriod.calendar_type == "solar")) \
                 .order_by(ShuttlePeriod.start_date - ShuttlePeriod.end_date).first()
         calendar = KoreanLunarCalendar()
-        calendar.setSolarDate(now.year, now.month, now.day)
+        calendar.setSolarDate(current_date.year, current_date.month, current_date.day)
         lunar_period_item = db_session.query(ShuttlePeriod) \
             .filter(and_(
                 calendar.LunarIsoFormat() >= ShuttlePeriod.start_date,
