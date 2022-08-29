@@ -36,7 +36,7 @@ class SubwayItem:
     @strawberry.field
     def timetable(self,
                   info: Info, heading: str | None, weekday: str | None,
-                  start_time: datetime.time | None, end_time: datetime.time | None) \
+                  start_time: datetime.time | None, end_time: datetime.time | None, count: int = 999) \
             -> list[SubwayTimetableItem]:
         db_session: Session = info.context["db_session"]
         expressions = []
@@ -51,8 +51,8 @@ class SubwayItem:
         if end_time is not None:
             expressions.append(SubwayTimetable.departure_time <= end_time)
 
-
-        query = db_session.query(SubwayTimetable).filter(and_(True, *expressions)).order_by(SubwayTimetable.departure_time).all()
+        query = db_session.query(SubwayTimetable)\
+            .filter(and_(True, *expressions)).order_by(SubwayTimetable.departure_time).limit(count)
         result: list[SubwayTimetableItem] = []
         for x in query:
             result.append(SubwayTimetableItem(
