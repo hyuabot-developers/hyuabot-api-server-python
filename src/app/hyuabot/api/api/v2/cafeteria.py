@@ -24,7 +24,7 @@ class CafeteriaItem:
     def menu(self, info: Info, time_type: Optional[str] = None) -> list[MenuItem]:
         db_session: Session = info.context["db_session"]
         expressions = [Menu.cafeteria_id == self.cafeteria_id]
-        if time_type is not None:
+        if time_type is not None and len(time_type) > 0:
             expressions.append(Menu.time_type == time_type)
         query = db_session.query(Menu).filter(and_(True, *expressions)).all()
         result: list[MenuItem] = []

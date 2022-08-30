@@ -39,7 +39,7 @@ class BusItem:
         expressions = [BusTimetable.route_id == self.route_id]
         if weekday == "now":
             weekday = "weekdays" if datetime.now().weekday() < 5 else "weekends"
-        if weekday is not None:
+        if weekday is not None and len(weekday) > 0:
             expressions.append(BusTimetable.weekday == weekday)
         query = db_session.query(BusTimetable).filter(and_(True, *expressions)).limit(count)
         result: list[BusTimetableItem] = []

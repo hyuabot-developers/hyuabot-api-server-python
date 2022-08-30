@@ -46,7 +46,7 @@ class SubwayItem:
         ]
         if weekday == "now":
             weekday = "weekdays" if datetime.datetime.now().weekday() < 5 else "weekends"
-        if weekday is not None:
+        if weekday is not None and len(weekday) > 0:
             expressions.append(SubwayTimetable.weekday == weekday)
         if heading is not None:
             expressions.append(SubwayTimetable.heading == heading)
