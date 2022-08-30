@@ -42,7 +42,7 @@ class SubwayItem:
         db_session: Session = info.context["db_session"]
         expressions = [
             SubwayTimetable.route_name == self.route_name,
-            SubwayTimetable.station_name == self.station_name
+            SubwayTimetable.station_name == self.station_name,
         ]
         if weekday == "now":
             weekday = "weekdays" if datetime.datetime.now().weekday() < 5 else "weekends"
