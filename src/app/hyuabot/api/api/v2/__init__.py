@@ -15,6 +15,25 @@ from app.hyuabot.api.models.postgresql.cafeteria import Cafeteria
 from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 
 
+def bus_query(db_session: Session, stop_name: str, route_name: str) -> BusItem | None:
+    stop_query: BusStop = \
+        db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
+    route_query: BusRoute = \
+        db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
+    if stop_query is not None and route_query is not None:
+        bus_item = BusItem(
+            stop_name=stop_name,
+            stop_id=stop_query.gbis_id,
+            route_name=route_name,
+            route_id=route_query.gbis_id,
+            start_stop=route_query.start_stop,
+            terminal_stop=route_query.terminal_stop,
+            time_from_start_stop=route_query.time_from_start_stop,
+        )
+        return bus_item
+    return None
+
+
 @strawberry.type
 class Query:
     @strawberry.input
@@ -26,25 +45,6 @@ class Query:
     class SubwayQuery:
         station_name: str
         route_name: str
-
-    @staticmethod
-    def bus_query(db_session: Session, stop_name: str, route_name: str) -> BusItem | None:
-        stop_query: BusStop = \
-            db_session.query(BusStop).filter(BusStop.stop_name == stop_name).first()
-        route_query: BusRoute = \
-            db_session.query(BusRoute).filter(BusRoute.route_name == route_name).first()
-        if stop_query is not None and route_query is not None:
-            bus_item = BusItem(
-                stop_name=stop_name,
-                stop_id=stop_query.gbis_id,
-                route_name=route_name,
-                route_id=route_query.gbis_id,
-                start_stop=route_query.start_stop,
-                terminal_stop=route_query.terminal_stop,
-                time_from_start_stop=route_query.time_from_start_stop,
-            )
-            return bus_item
-        return None
 
     @strawberry.field
     def shuttle(self) -> Shuttle:
@@ -70,13 +70,13 @@ class Query:
         db_session: Session = info.context["db_session"]
         if route_pair is not None:
             for query_item in route_pair:
-                bus_item = self.bus_query(db_session, query_item.stop_name, query_item.route_name)
+                bus_item = bus_query(db_session, query_item.stop_name, query_item.route_name)
                 if bus_item is not None:
                     result.append(bus_item)
         elif stop_list is not None and routes is not None:
             for stop_name in stop_list:
                 for route_name in routes:
-                    bus_item = self.bus_query(db_session, stop_name, route_name)
+                    bus_item = bus_query(db_session, stop_name, route_name)
                     if bus_item is not None:
                         result.append(bus_item)
         return result

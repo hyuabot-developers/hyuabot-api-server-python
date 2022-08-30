@@ -1,4 +1,5 @@
 from datetime import time, datetime
+from typing import Optional
 
 import strawberry
 from sqlalchemy import and_
@@ -33,7 +34,7 @@ class BusItem:
     time_from_start_stop: int
 
     @strawberry.field
-    def timetable(self, info: Info, weekday: str | None, count: int = 999) -> list[BusTimetableItem]:
+    def timetable(self, info: Info, weekday: Optional[str] = None, count: int = 999) -> list[BusTimetableItem]:
         db_session: Session = info.context["db_session"]
         expressions = [BusTimetable.route_id == self.route_id]
         if weekday == "now":
