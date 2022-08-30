@@ -1,3 +1,5 @@
+from typing import Optional
+
 import strawberry
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -19,12 +21,12 @@ class CafeteriaItem:
     cafeteria_name: str
 
     @strawberry.field
-    def menu(self, info: Info, time_type: str = None) -> list[MenuItem]:
+    def menu(self, info: Info, time_type: Optional[str] = None) -> list[MenuItem]:
         db_session: Session = info.context["db_session"]
-        query = db_session.query(Menu).filter(and_(
-            Menu.cafeteria_id == self.cafeteria_id,
-            Menu.time_type == time_type if time_type else True,
-        )).all()
+        expressions = [Menu.cafeteria_id == self.cafeteria_id]
+        if time_type is not None and len(time_type) > 0:
+            expressions.append(Menu.time_type == time_type)
+        query = db_session.query(Menu).filter(and_(True, *expressions)).all()
         result: list[MenuItem] = []
         for x in query:  # type: Menu
             result.append(MenuItem(

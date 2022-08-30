@@ -51,8 +51,9 @@ async def fetch_subway_realtime_information(db_session: Session = Depends(get_db
 async def get_subway_realtime_information(db_session: Session, route_name: str, station_name: str) \
         -> None:
     app_settings = AppSettings()
+    count = 5 if app_settings.METRO_API_KEY == "sample" else 60
     url = f"http://swopenapi.seoul.go.kr/api/subway/{app_settings.METRO_API_KEY}/json/" \
-          f"realtimePosition/0/60/{route_name}"
+          f"realtimePosition/0/{count}/{route_name}"
     timeout = aiohttp.ClientTimeout(total=3.0)
     arrival_list: list[SubwayRealtime] = []
     train_number_list: list[str] = []

@@ -1,4 +1,5 @@
 from datetime import time, datetime
+from typing import Optional
 
 import strawberry
 from sqlalchemy import and_
@@ -33,14 +34,21 @@ class BusItem:
     time_from_start_stop: int
 
     @strawberry.field
-    def timetable(self, info: Info, weekday: str) -> list[BusTimetableItem]:
+    def timetable(self, info: Info, weekday: Optional[str] = None,
+                  start_time: Optional[str] = None, end_time: Optional[str] = None,
+                  count: int = 999) -> list[BusTimetableItem]:
         db_session: Session = info.context["db_session"]
+        expressions = [BusTimetable.route_id == self.route_id]
         if weekday == "now":
             weekday = "weekdays" if datetime.now().weekday() < 5 else "weekends"
-        query = db_session.query(BusTimetable).filter(and_(
-            BusTimetable.route_id == self.route_id,
-            BusTimetable.weekday == weekday if weekday else True,
-        )).all()
+        if weekday is not None and len(weekday) > 0:
+            expressions.append(BusTimetable.weekday == weekday)
+        if start_time is not None:
+            expressions.append(BusTimetable.departure_time >= start_time)
+        if end_time is not None:
+            expressions.append(BusTimetable.departure_time <= end_time)
+        query = db_session.query(BusTimetable).filter(and_(True, *expressions))\
+            .order_by(BusTimetable.departure_time).limit(count + 1)
         result: list[BusTimetableItem] = []
         for x in query:
             result.append(BusTimetableItem(

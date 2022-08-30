@@ -13,7 +13,7 @@ class AppSettings(BaseSettings):
                 f"{os.environ.get('POSTGRES_HOST', 'localhost')}:"
                 f"{os.environ.get('POSTGRES_PORT', 5432)}/hyuabot")
     BUS_API_KEY = Field(default=os.environ.get("BUS_API_KEY", "1234567890"))
-    METRO_API_KEY = Field(default=os.environ.get("METRO_API_KEY", "1234567890"))
+    METRO_API_KEY = Field(default=os.environ.get("METRO_API_KEY", "sample"))
     DATABASE_OPTIONS: Dict[str, Any] = Field(
         default={
             'connect_args': {
