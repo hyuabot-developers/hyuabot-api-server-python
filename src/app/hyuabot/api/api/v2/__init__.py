@@ -82,7 +82,7 @@ class Query:
         return result
 
     @strawberry.field
-    def reading_room(self, info: Info, room_name: str | None, campus_id: int | None,
+    def reading_room(self, info: Info, room_name: Optional[str] = None, campus_id: Optional[int] = 0,
                      is_active: bool = True) -> list[ReadingRoomItem]:
         db_session: Session = info.context["db_session"]
         expressions = [ReadingRoom.is_active == is_active]
