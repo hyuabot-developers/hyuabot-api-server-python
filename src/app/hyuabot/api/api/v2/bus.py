@@ -47,7 +47,8 @@ class BusItem:
             expressions.append(BusTimetable.departure_time >= start_time)
         if end_time is not None:
             expressions.append(BusTimetable.departure_time <= end_time)
-        query = db_session.query(BusTimetable).filter(and_(True, *expressions)).limit(count + 1)
+        query = db_session.query(BusTimetable).filter(and_(True, *expressions))\
+            .order_by(BusTimetable.departure_time).limit(count + 1)
         result: list[BusTimetableItem] = []
         for x in query:
             result.append(BusTimetableItem(
