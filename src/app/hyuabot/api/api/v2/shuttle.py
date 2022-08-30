@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 import strawberry
 from korean_lunar_calendar import KoreanLunarCalendar
@@ -21,7 +22,7 @@ class ShuttleTimetableItem:
 @strawberry.type
 class Shuttle:
     @strawberry.field
-    def period(self, info: Info, date: str | None) -> str:
+    def period(self, info: Info, date: Optional[str] = None) -> str:
         db_session: Session = info.context["db_session"]
         if date is None:
             current_date = datetime.now()
@@ -56,7 +57,7 @@ class Shuttle:
         return period_item.period
 
     @strawberry.field
-    def weekday(self, info: Info,  date: str | None) -> str:
+    def weekday(self, info: Info,  date: Optional[str] = None) -> str:
         db_session: Session = info.context["db_session"]
         if date is None:
             current_date = datetime.now()
@@ -86,8 +87,9 @@ class Shuttle:
 
     @strawberry.field
     def timetable(
-            self, info: Info, period: str | None, weekday: str | None, shuttle_type: str | None,
-            start_stop: str | None, start_time: str | None, end_time: str | None, count: int = 999,
+            self, info: Info, period: Optional[str] = None, weekday: Optional[str] = None,
+            shuttle_type: Optional[str] = None, start_stop: Optional[str] = None,
+            start_time: Optional[str] = None, end_time: Optional[str] = None, count: int = 999,
     ) -> list[ShuttleTimetableItem]:
         db_session: Session = info.context["db_session"]
         expressions = []
