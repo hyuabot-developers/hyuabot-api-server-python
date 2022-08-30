@@ -1,3 +1,5 @@
+from typing import Optional
+
 import strawberry
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -15,6 +17,16 @@ from app.hyuabot.api.models.postgresql.reading_room import ReadingRoom
 
 @strawberry.type
 class Query:
+    @strawberry.input
+    class BusQuery:
+        stop_name: str
+        route_name: str
+
+    @strawberry.input
+    class SubwayQuery:
+        station_name: str
+        route_name: str
+
     @staticmethod
     def bus_query(db_session: Session, stop_name: str, route_name: str) -> BusItem | None:
         stop_query: BusStop = \
@@ -39,12 +51,12 @@ class Query:
         return Shuttle()
 
     @strawberry.field
-    def subway(self, stations: list[str] | None, routes: list[str] | None,
-               route_pair: list[tuple[str, str]] | None) -> list[SubwayItem]:
+    def subway(self, stations: Optional[list[str]] = None, routes: Optional[list[str]] = None,
+               route_pair: Optional[list[SubwayQuery]] = None) -> list[SubwayItem]:
         result: list[SubwayItem] = []
         if route_pair is not None:
-            for station_name, route_name in route_pair:
-                result.append(SubwayItem(station_name=station_name, route_name=route_name))
+            for query_item in route_pair:
+                result.append(SubwayItem(station_name=query_item.station_name, route_name=query_item.route_name))
         elif stations is not None and routes is not None:
             for station_name in stations:
                 for route_name in routes:
@@ -52,13 +64,13 @@ class Query:
         return result
 
     @strawberry.field
-    def bus(self, info: Info, stop_list: list[str] | None, routes: list[str] | None,
-            route_pair: list[tuple[str, str]] | None) -> list[BusItem]:
+    def bus(self, info: Info, stop_list: Optional[list[str]] = None, routes: Optional[list[str]] = None,
+            route_pair: Optional[list[BusQuery]] = None) -> list[BusItem]:
         result: list[BusItem] = []
         db_session: Session = info.context["db_session"]
         if route_pair is not None:
-            for stop_name, route_name in route_pair:
-                bus_item = self.bus_query(db_session, stop_name, route_name)
+            for query_item in route_pair:
+                bus_item = self.bus_query(db_session, query_item.stop_name, query_item.route_name)
                 if bus_item is not None:
                     result.append(bus_item)
         elif stop_list is not None and routes is not None:
