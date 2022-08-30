@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 import strawberry
 from sqlalchemy import and_
@@ -35,11 +36,14 @@ class SubwayItem:
 
     @strawberry.field
     def timetable(self,
-                  info: Info, heading: str | None, weekday: str | None,
-                  start_time: datetime.time | None, end_time: datetime.time | None, count: int = 999) \
-            -> list[SubwayTimetableItem]:
+                  info: Info, heading: Optional[str] = None, weekday: Optional[str] = None,
+                  start_time: Optional[datetime.time] = None, end_time: Optional[datetime.time] = None,
+                  count: int = 999) -> list[SubwayTimetableItem]:
         db_session: Session = info.context["db_session"]
-        expressions = []
+        expressions = [
+            SubwayTimetable.route_name == self.route_name,
+            SubwayTimetable.station_name == self.station_name
+        ]
         if weekday == "now":
             weekday = "weekdays" if datetime.datetime.now().weekday() < 5 else "weekends"
         if weekday is not None:
@@ -64,7 +68,7 @@ class SubwayItem:
         return result
 
     @strawberry.field
-    def realtime(self, info: Info, heading: str = None) -> list[SubwayRealtimeItem]:
+    def realtime(self, info: Info, heading: Optional[str] = None) -> list[SubwayRealtimeItem]:
         db_session: Session = info.context["db_session"]
         query = db_session.query(SubwayRealtime).filter(and_(
             SubwayRealtime.station_name == self.station_name,
