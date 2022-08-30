@@ -34,14 +34,20 @@ class BusItem:
     time_from_start_stop: int
 
     @strawberry.field
-    def timetable(self, info: Info, weekday: Optional[str] = None, count: int = 999) -> list[BusTimetableItem]:
+    def timetable(self, info: Info, weekday: Optional[str] = None,
+                  start_time: Optional[str] = None, end_time: Optional[str] = None,
+                  count: int = 999) -> list[BusTimetableItem]:
         db_session: Session = info.context["db_session"]
         expressions = [BusTimetable.route_id == self.route_id]
         if weekday == "now":
             weekday = "weekdays" if datetime.now().weekday() < 5 else "weekends"
         if weekday is not None and len(weekday) > 0:
             expressions.append(BusTimetable.weekday == weekday)
-        query = db_session.query(BusTimetable).filter(and_(True, *expressions)).limit(count)
+        if start_time is not None:
+            expressions.append(BusTimetable.departure_time >= start_time)
+        if end_time is not None:
+            expressions.append(BusTimetable.departure_time <= end_time)
+        query = db_session.query(BusTimetable).filter(and_(True, *expressions)).limit(count + 1)
         result: list[BusTimetableItem] = []
         for x in query:
             result.append(BusTimetableItem(

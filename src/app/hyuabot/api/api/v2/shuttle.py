@@ -109,7 +109,7 @@ class Shuttle:
             expressions.append(ShuttleTimetable.shuttle_time <= end_time)
 
         query = db_session.query(ShuttleTimetable) \
-            .filter(and_(True, *expressions)).limit(count)
+            .filter(and_(True, *expressions)).limit(count + 1)
         result: list[ShuttleTimetableItem] = []
         for x in query:  # type: ShuttleTimetable
             result.append(

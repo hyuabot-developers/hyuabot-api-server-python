@@ -56,7 +56,7 @@ class SubwayItem:
             expressions.append(SubwayTimetable.departure_time <= end_time)
 
         query = db_session.query(SubwayTimetable)\
-            .filter(and_(True, *expressions)).order_by(SubwayTimetable.departure_time).limit(count)
+            .filter(and_(True, *expressions)).order_by(SubwayTimetable.departure_time).limit(count + 1)
         result: list[SubwayTimetableItem] = []
         for x in query:
             result.append(SubwayTimetableItem(
