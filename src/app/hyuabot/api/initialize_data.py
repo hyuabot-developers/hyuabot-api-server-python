@@ -107,11 +107,11 @@ async def insert_shuttle_period_items(db_session: Session):
                     end_date = datetime.fromisoformat(
                         f"{year}-{str(end_date.month).zfill(2)}-{str(end_date.day).zfill(2)}T23:59:59")
                     if start_date < end_date:
-                        if now > end_date:
+                        if now.month > int(end_date.month) or (now.month == int(end_date.month) and now.day > int(end_date.day)):
                             start_date = start_date.replace(year=now.year + 1)
                             end_date = end_date.replace(year=now.year + 1)
                     else:
-                        if now < end_date:
+                        if now.month < int(end_date.month) or (now.month == int(end_date.month) and now.day < int(end_date.day)):
                             start_date = start_date.replace(year=now.year - 1)
                         else:
                             end_date = end_date.replace(year=now.year + 1)
