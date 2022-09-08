@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone, timedelta, time
 
 from aiohttp import ClientSession
+from korean_lunar_calendar import KoreanLunarCalendar
 from sqlalchemy.orm import Session
 
 from app.hyuabot.api.models.postgresql.bus import BusRoute, BusStop, BusTimetable
@@ -83,10 +84,13 @@ async def insert_shuttle_period_items(db_session: Session):
             for calendar_type, holiday_list in date_json['halt'].items():
                 for holiday in holiday_list:
                     month, day = holiday.split('/')
-                    if now.month > int(month) or (now.month == int(month) and now.day > int(day)):
-                        year = now.year + 1
-                    else:
+                    if calendar_type == "lunar":
                         year = now.year
+                    else:
+                        if now.month > int(month) or (now.month == int(month) and now.day > int(day)):
+                            year = now.year + 1
+                        else:
+                            year = now.year
                     period_items.append(
                         ShuttlePeriod(
                             period="halt",
