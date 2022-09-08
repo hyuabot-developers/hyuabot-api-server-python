@@ -29,7 +29,7 @@ async def get_shuttle_term(db_session: Session, date_item: datetime = None) \
     period_item = db_session.query(ShuttlePeriod)\
         .filter(and_(
             date_item >= ShuttlePeriod.start_date,
-            date_item <= ShuttlePeriod.end_date,
+            date_item <= ShuttlePeriod.end_date, ShuttlePeriod.period != "holiday",
             ShuttlePeriod.calendar_type == "solar"))\
         .order_by(ShuttlePeriod.end_date - ShuttlePeriod.start_date).first()
     if period_item is None:
