@@ -41,7 +41,7 @@ class BusItem:
         expressions = [BusTimetable.route_id == self.route_id]
         if weekday == "now":
             weekday = "weekdays" if datetime.now().weekday() < 5 else "weekends"
-        if weekday is not None and len(weekday) > 0:
+        if weekday is not None and len(weekday) > 0 and weekday != "halt":
             expressions.append(BusTimetable.weekday == weekday)
         if start_time is not None:
             expressions.append(BusTimetable.departure_time >= start_time)
