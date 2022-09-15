@@ -114,7 +114,7 @@ class Shuttle:
         result: list[ShuttleTimetableItem] = []
         for heading in ["DH", "DY", "C"]:
             filtered_list = list(filter(lambda item: item.shuttle_type == heading, query))
-            for x in filtered_list[:min(count, len(filtered_list))]:  # type: ShuttleTimetable
+            for x in filtered_list[:min(count, len(filtered_list * 3))]:  # type: ShuttleTimetable
                 result.append(
                     ShuttleTimetableItem(
                         period=x.period,
