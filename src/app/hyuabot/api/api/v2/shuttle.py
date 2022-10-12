@@ -112,17 +112,19 @@ class Shuttle:
             .filter(and_(True, *expressions)).order_by(ShuttleTimetable.shuttle_time)
 
         result: list[ShuttleTimetableItem] = []
-        for heading in ["DH", "DY", "C"]:
-            filtered_list = list(filter(lambda item: item.shuttle_type == heading, query))
-            for x in filtered_list[:min(count * 3, len(filtered_list))]:  # type: ShuttleTimetable
-                result.append(
-                    ShuttleTimetableItem(
-                        period=x.period,
-                        weekday=x.weekday,
-                        shuttle_type=x.shuttle_type,
-                        shuttle_time=x.shuttle_time,
-                        start_stop=x.start_stop,
-                    ),
-                )
+        for start in ["Dormitory", "Shuttlecock"]:
+            for heading in ["DH", "DY", "C"]:
+                filtered_list = list(filter(
+                    lambda item: item.shuttle_type == heading and item.start_stop == start, query))
+                for x in filtered_list[:min(count, len(filtered_list))]:  # type: ShuttleTimetable
+                    result.append(
+                        ShuttleTimetableItem(
+                            period=x.period,
+                            weekday=x.weekday,
+                            shuttle_type=x.shuttle_type,
+                            shuttle_time=x.shuttle_time,
+                            start_stop=x.start_stop,
+                        ),
+                    )
 
         return result
