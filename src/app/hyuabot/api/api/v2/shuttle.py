@@ -127,4 +127,4 @@ class Shuttle:
                         ),
                     )
 
-        return result
+        return sorted(result, key=lambda x:x.shuttle_type)
