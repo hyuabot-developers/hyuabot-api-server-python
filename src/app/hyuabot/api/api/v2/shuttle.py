@@ -127,4 +127,4 @@ class Shuttle:
                         ),
                     )
 
-        return sorted(result, key=lambda x:x.shuttle_type)
+        return sorted(result, key=lambda x:x.shuttle_time)
